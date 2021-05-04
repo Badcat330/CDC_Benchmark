@@ -1,4 +1,4 @@
-from Benchmark import testCollection
+from Benchmark import Benchmark
 import sys
 import json
 import argparse
@@ -35,6 +35,10 @@ if __name__ == '__main__':
     spec = importlib.util.spec_from_file_location(args.module, args.path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    collection = getattr(module, args.className)
+    cdc = getattr(module, args.className)
 
-    testCollection(collection())
+    benchmark = Benchmark()
+    result = benchmark.testCDC(cdc())
+
+    for line in result:
+        print(line, '=', result[line])
