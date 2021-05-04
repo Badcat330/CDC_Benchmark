@@ -1,4 +1,5 @@
 import psycopg2
+import sqlite3
 
 
 class DBConnectorException(ValueError):
@@ -6,12 +7,24 @@ class DBConnectorException(ValueError):
 
 
 class DBConnector:
-    def __init__(self, dbname='', user='', password='', host=''):
-        if dbname == '' or user == '' or password == '' or host == '':
+    def __init__(self, dbtype='', dbname='', user='', password='', host='', port=''):
+        if dbname == '':
             raise DBConnectorException
 
-        self.connector = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
+        if dbtype == 'PostgreSQL':
+            if user == '' or password == '' or host == '' or port == '':
+                raise DBConnectorException
+            self.connector = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
+        elif dbtype == 'SQLite':
+            self.connector = sqlite3.connect(dbname)
+        else:
+            raise DBConnectorException
 
-    def getTestData(self):
+    def getExperimentsData(self, experimentNumber=1):
         cur = self.connector.cursor()
-        cur.execute("SELECT Content FROM DataSet")
+        cur.execute(f"SELECT tb_name FROM experiments1 WHERE experiment_id = {experimentNumber} ORDER BY elements")
+        tables = cur.fetchall()
+        for table in tables:
+            cur.execute(f"SELECT dp1 FROM {table[0]}")
+            yield list(map(lambda x: x[0], cur.fetchall()))
+        cur.close()

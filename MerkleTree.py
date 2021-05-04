@@ -1,5 +1,5 @@
 from CompareCollection import CompareCollection
-
+import hashlib
 
 class MerkleTreeNode:
     def __init__(self, value, hashValue):
@@ -11,7 +11,8 @@ class MerkleTreeNode:
 
 class MerkleTree(CompareCollection):
     """Easy implementation of Merkle Tree"""
-    def __init__(self, hashFunc):
+
+    def __init__(self, hashFunc=hashlib.sha256):
         self.hash = hashFunc
         self.nodes = []
         self.root = ''
