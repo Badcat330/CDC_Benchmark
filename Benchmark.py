@@ -29,13 +29,13 @@ class Benchmark:
 
         start_perf = time.perf_counter_ns()
         start_monotonic = time.monotonic_ns()
-        collection.build(next(gen_data))
+        collection.build(list(map(str, next(gen_data))))
         end_perf = time.perf_counter_ns()
         end_monotonic = time.monotonic_ns()
 
         self.benchmark_result['Build collection time performance'] = str(end_perf - start_perf)
         self.benchmark_result['Build collection time monotonic'] = str(end_monotonic - start_monotonic)
-        self.benchmark_result['Memory usage'] = h.iso(collection)
+        self.benchmark_result['Memory usage'] = h.iso(collection).indisize
 
     def testCompareCollection(self, collection: CompareCollection):
         # TODO: Implement

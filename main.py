@@ -11,6 +11,8 @@ if __name__ == '__main__':
     parser.add_argument("--profile", "-p", help="Add profile information in json if it is given else it shows exist "
                                                 "one.", nargs='?', const=' ')
     parser.add_argument("--template", "-t", help="Create profile template json.")
+    parser.add_argument("--file", "-f", help='Option for saving results in json file.'
+                                             ' Required path for saving file')
     parser.add_argument('path', help='.py file with collection witch implement CompareCollection interface.'
                                      'This collection will be benchmarked.')
     parser.add_argument('module', help='Name of module with collection for Benchmarking.')
@@ -40,5 +42,9 @@ if __name__ == '__main__':
     benchmark = Benchmark()
     result = benchmark.testCDC(cdc())
 
-    for line in result:
-        print(line, '=', result[line])
+    if args.file:
+        with open(args.file + os.path.sep + "benchmark_results.json", 'w') as file_w:
+            file_w.write(json.dumps(result, sort_keys=True, indent=4))
+    else:
+        for line in result:
+            print(line, '=', result[line])
