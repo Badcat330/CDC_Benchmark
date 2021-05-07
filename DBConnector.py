@@ -20,11 +20,16 @@ class DBConnector:
         else:
             raise DBConnectorException
 
-    def getExperimentsData(self, experimentNumber=1):
+    def getExperimentsData(self, experimentNumber):
         cur = self.connector.cursor()
-        cur.execute(f"SELECT tb_name FROM experiments1 WHERE experiment_id = {experimentNumber} ORDER BY elements")
+        cur.execute(f"SELECT tb_source, tb_target, changes FROM tb_names WHERE experiment_id = {experimentNumber}"
+                    f" ORDER BY elements")
         tables = cur.fetchall()
         for table in tables:
-            cur.execute(f"SELECT dp1 FROM {table[0]}")
-            yield list(map(lambda x: x[0], cur.fetchall()))
+            cur.execute(f"SELECT id, value FROM {table[0]} ORDER BY id")
+            tb_source = cur.fetchall()
+            cur.execute(f"SELECT id, value FROM {table[1]} ORDER BY id")
+            tb_target = cur.fetchall()
+            changes = table[2]
+            yield tb_source, tb_target, changes
         cur.close()
