@@ -31,8 +31,8 @@ class MerkleTreeWrapper(CompareCollection):
             return []
         else:
             if level_index == len(self.mt.levels) - 1:
-                return [{'id': str(collectionB.data[item_index][0]),
-                         'value': str(collectionB.data[item_index][1])}]
+                return [{'id': collectionB.data[item_index][0],
+                         'value': collectionB.data[item_index][1]}]
             else:
                 return self.check(collectionB, item_index * 2, level_index + 1) + \
                        self.check(collectionB, item_index * 2 + 1, level_index + 1)
