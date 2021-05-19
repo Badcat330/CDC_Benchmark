@@ -13,7 +13,8 @@ if __name__ == '__main__':
     parser.add_argument("--template", "-t", help="Create profile template json.")
     parser.add_argument("--file", "-f", help='Option for saving results in json file.'
                                              ' Required path for saving file')
-    parser.add_argument("--experiment", "-e", help='Option for specifying experiment id.')
+    parser.add_argument("--experiment", "-e", help='Option for specifying experiment id.', nargs='?')
+    parser.add_argument("--tables", "-tb", help='Option for tables names for compare.', nargs='+')
     parser.add_argument('path', help='.py file with collection witch implement CompareCollection interface.'
                                      'This collection will be benchmarked.')
     parser.add_argument('module', help='Name of module with collection for Benchmarking.')
@@ -25,15 +26,18 @@ if __name__ == '__main__':
         if args.profile == ' ':
             with open('config.json', 'r') as file_r:
                 parsed = json.load(file_r)
-                print(json.dumps(parsed, sort_keys=True, indent=4))
+                print(json.dumps(parsed, sort_keys=True, indent=2))
+            sys.exit()
         else:
             with open(args.profile, 'r') as file_r, open('config.json', 'w') as file_w:
                 parsed = json.load(file_r)
-                file_w.write(json.dumps(parsed, sort_keys=True, indent=4))
+                file_w.write(json.dumps(parsed, sort_keys=True, indent=2))
     if args.template:
         with open(args.template + os.path.sep + 'config_template.json', 'w') as file_w:
-            template = {"ip": "", "port": "", "db": "", "login": "", "password": ""}
-            file_w.write(json.dumps(template, sort_keys=True, indent=4))
+            template = {"DBMS1": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""},
+                        "DBMS2": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""}}
+            file_w.write(json.dumps(template, sort_keys=True, indent=2))
+        sys.exit()
 
     spec = importlib.util.spec_from_file_location(args.module, args.path)
     module = importlib.util.module_from_spec(spec)
@@ -42,13 +46,16 @@ if __name__ == '__main__':
 
     benchmark = Benchmark()
     if args.experiment:
-        result = benchmark.testCDC(cdc, args.experiment)
+        result = benchmark.testCDCExperimentSet(cdc, args.experiment)
     else:
-        result = benchmark.testCDC(cdc)
+        if args.tables:
+            result = benchmark.testCDCCompareTables(cdc, args.tables)
+        else:
+            print('Provide table option or experiment option!')
+            sys.exit()
 
     if args.file:
         with open(args.file + os.path.sep + "benchmark_results.json", 'w') as file_w:
-            file_w.write(json.dumps(result, sort_keys=True, indent=4))
+            file_w.write(json.dumps(result, sort_keys=True, indent=2))
     else:
-        for line in result:
-            print(line, '=', result[line])
+        print(json.dumps(result, sort_keys=True, indent=2))
