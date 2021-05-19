@@ -5,6 +5,7 @@ import argparse
 import os
 import importlib
 import importlib.util
+from json2table import convert
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -59,3 +60,5 @@ if __name__ == '__main__':
             file_w.write(json.dumps(result, sort_keys=True, indent=2))
     else:
         print(json.dumps(result, sort_keys=True, indent=2))
+        with open('table.html', 'w') as file_w:
+            file_w.write(convert({'Changes table': result['Changes table']}, "LEFT_TO_RIGHT", {"style": "width:100%"}))
