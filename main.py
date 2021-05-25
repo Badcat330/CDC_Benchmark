@@ -14,6 +14,7 @@ if __name__ == '__main__':
     parser.add_argument("--template", "-t", help="Create profile template json.")
     parser.add_argument("--file", "-f", help='Option for saving results in json file.'
                                              ' Required path for saving file')
+    parser.add_argument("--tableOut", "-to", help='Option for saving results in table.')
     parser.add_argument("--experiment", "-e", help='Option for specifying experiment id.', nargs='?')
     parser.add_argument("--tables", "-tb", help='Option for tables names for compare.', nargs='+')
     parser.add_argument('path', help='.py file with collection witch implement CompareCollection interface.'
@@ -60,5 +61,8 @@ if __name__ == '__main__':
             file_w.write(json.dumps(result, sort_keys=True, indent=2))
     else:
         print(json.dumps(result, sort_keys=True, indent=2))
-        with open('table.html', 'w') as file_w:
-            file_w.write(convert({'Changes table': result['Changes table']}, "LEFT_TO_RIGHT", {"style": "width:100%"}))
+
+    if args.tableOut:
+        with open(args.tableOut + os.path.sep + "benchmark_results_table.html", 'w') as file_w:
+            file_w.write(convert({'Changes table': result['Changes table']},
+                                 "LEFT_TO_RIGHT", {"style": "width:100%"}))
