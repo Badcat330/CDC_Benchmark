@@ -17,10 +17,10 @@ if __name__ == '__main__':
     parser.add_argument("--tableOut", "-to", help='Option for saving results in table.')
     parser.add_argument("--experiment", "-e", help='Option for specifying experiment id.', nargs='?')
     parser.add_argument("--tables", "-tb", help='Option for tables names for compare.', nargs='+')
-    parser.add_argument('path', help='.py file with collection witch implement CompareCollection interface.'
-                                     'This collection will be benchmarked.')
-    parser.add_argument('module', help='Name of module with collection for Benchmarking.')
-    parser.add_argument('className', help='Name of collection class for Benchmarking.')
+    parser.add_argument('path', nargs='?', help='.py file with collection witch implement CompareCollection interface.'
+                                                'This collection will be benchmarked.')
+    parser.add_argument('module', nargs='?', help='Name of module with collection for Benchmarking.')
+    parser.add_argument('className', nargs='?', help='Name of collection class for Benchmarking.')
 
     args = parser.parse_args()
 
@@ -36,33 +36,34 @@ if __name__ == '__main__':
                 file_w.write(json.dumps(parsed, sort_keys=True, indent=2))
     if args.template:
         with open(args.template + os.path.sep + 'config_template.json', 'w') as file_w:
-            template = {"DBMS1": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""},
-                        "DBMS2": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""}}
+            template = {"Source": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""},
+                        "Destination": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""}}
             file_w.write(json.dumps(template, sort_keys=True, indent=2))
         sys.exit()
 
-    spec = importlib.util.spec_from_file_location(args.module, args.path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    cdc = getattr(module, args.className)
+    if args.module and args.path and args.className:
+        spec = importlib.util.spec_from_file_location(args.module, args.path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        cdc = getattr(module, args.className)
 
-    benchmark = Benchmark()
-    if args.experiment:
-        result = benchmark.testCDCExperimentSet(cdc, args.experiment)
-    else:
-        if args.tables:
-            result = benchmark.testCDCCompareTables(cdc, args.tables)
+        benchmark = Benchmark()
+        if args.experiment:
+            result = benchmark.testCDCExperimentSet(cdc, args.experiment)
         else:
-            print('Provide table option or experiment option!')
-            sys.exit()
+            if args.tables:
+                result = benchmark.testCDCCompareTables(cdc, args.tables)
+            else:
+                print('Provide table option or experiment option!')
+                sys.exit()
 
-    if args.file:
-        with open(args.file + os.path.sep + "benchmark_results.json", 'w') as file_w:
-            file_w.write(json.dumps(result, sort_keys=True, indent=2))
-    else:
-        print(json.dumps(result, sort_keys=True, indent=2))
+        if args.file:
+            with open(args.file + os.path.sep + "benchmark_results.json", 'w') as file_w:
+                file_w.write(json.dumps(result, sort_keys=True, indent=2))
+        else:
+            print(json.dumps(result, sort_keys=True, indent=2))
 
-    if args.tableOut:
-        with open(args.tableOut + os.path.sep + "benchmark_results_table.html", 'w') as file_w:
-            file_w.write(convert({'Changes table': result['Changes table']},
-                                 "LEFT_TO_RIGHT", {"style": "width:100%"}))
+        if args.tableOut:
+            with open(args.tableOut + os.path.sep + "benchmark_results_table.html", 'w') as file_w:
+                file_w.write(convert({'Changes table': result['Changes table']},
+                                     "LEFT_TO_RIGHT", {"style": "width:100%"}))

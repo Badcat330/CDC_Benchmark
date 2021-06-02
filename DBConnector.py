@@ -2,6 +2,7 @@ import psycopg2
 import sqlite3
 import mysql.connector
 import json
+import pymssql
 
 
 class DBConnectorException(ValueError):
@@ -39,6 +40,15 @@ class DBConnector:
                                                               port=config[dbms]["port"]))
             elif config[dbms]['DBMS'] == 'SQLite':
                 self.connector.append(sqlite3.connect(config[dbms]['db']))
+            elif config[dbms]['DBMS'] == 'SQLServer':
+                if config[dbms]["user"] == '' or config[dbms]["password"] == '' or \
+                        config[dbms]["ip"] == '' or config[dbms]["port"] == '':
+                    raise DBConnectorException
+                self.connector.append(pymssql.connect(server=config[dbms]["ip"],
+                                                      user=config[dbms]["user"],
+                                                      password=config[dbms]["password"],
+                                                      database=config[dbms]['db'],
+                                                      port=config[dbms]["port"]))
             else:
                 raise DBConnectorException
 
