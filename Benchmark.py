@@ -7,7 +7,7 @@ import json
 
 
 class Benchmark:
-    def __init__(self):
+    def __init__(self, dbSave=False):
         self.benchmark_result = {
             'Build collection source time performance': [],
             'Build collection source time monotonic': [],
@@ -20,6 +20,8 @@ class Benchmark:
             'Whole benchmark time performance': [],
             'Whole benchmark time monotonic': [],
         }
+
+        self.dbSave = dbSave
 
         self.db = DBConnector()
 
@@ -126,5 +128,8 @@ class Benchmark:
         self.benchmark_result['Whole benchmark time monotonic'] = str(end_monotonic - start_monotonic)
 
         answerJSON["Efficiency"] = self.benchmark_result
+
+        if self.dbSave:
+            self.db.saveResults(answerJSON, tables)
 
         return answerJSON

@@ -3,6 +3,8 @@ import sqlite3
 import mysql.connector
 import json
 import pymssql
+import uuid
+import datetime
 
 
 class DBConnectorException(ValueError):
@@ -11,49 +13,52 @@ class DBConnectorException(ValueError):
 
 class DBConnector:
     def __init__(self):
-        self.connector = []
+        self.connector = {}
         with open('config.json', 'r') as file:
             config = json.load(file)
 
-        for dbms in config:
+        self.connector['source'] = self.addDBMS(config['source'])
+        self.connector['destination'] = self.addDBMS(config['destination'])
+        self.connector['benchDB'] = self.addDBMS(config['benchDB'])
+        self.config = config
 
-            if config[dbms]['db'] == '':
-                raise DBConnectorException
+    def addDBMS(self, DBMS):
+        if DBMS['db'] == '':
+            raise DBConnectorException
 
-            if config[dbms]['DBMS'] == 'PostgreSQL':
-                if config[dbms]["user"] == '' or config[dbms]["password"] == '' or \
-                        config[dbms]["ip"] == '' or config[dbms]["port"] == '':
-                    raise DBConnectorException
-                self.connector.append(psycopg2.connect(dbname=config[dbms]['db'],
-                                                       user=config[dbms]["user"],
-                                                       password=config[dbms]["password"],
-                                                       host=config[dbms]["ip"],
-                                                       port=config[dbms]["port"]))
-            elif config[dbms]['DBMS'] == 'MySQL':
-                if config[dbms]["user"] == '' or config[dbms]["password"] == '' or \
-                        config[dbms]["ip"] == '' or config[dbms]["port"] == '':
-                    raise DBConnectorException
-                self.connector.append(mysql.connector.connect(database=config[dbms]['db'],
-                                                              user=config[dbms]["user"],
-                                                              password=config[dbms]["password"],
-                                                              host=config[dbms]["ip"],
-                                                              port=config[dbms]["port"]))
-            elif config[dbms]['DBMS'] == 'SQLite':
-                self.connector.append(sqlite3.connect(config[dbms]['db']))
-            elif config[dbms]['DBMS'] == 'SQLServer':
-                if config[dbms]["user"] == '' or config[dbms]["password"] == '' or \
-                        config[dbms]["ip"] == '' or config[dbms]["port"] == '':
-                    raise DBConnectorException
-                self.connector.append(pymssql.connect(server=config[dbms]["ip"],
-                                                      user=config[dbms]["user"],
-                                                      password=config[dbms]["password"],
-                                                      database=config[dbms]['db'],
-                                                      port=config[dbms]["port"]))
-            else:
+        if DBMS['DBMS'] == 'PostgreSQL':
+            if DBMS["user"] == '' or DBMS["password"] == '' or \
+                    DBMS["ip"] == '' or DBMS["port"] == '':
                 raise DBConnectorException
+            return psycopg2.connect(dbname=DBMS['db'],
+                                    user=DBMS["user"],
+                                    password=DBMS["password"],
+                                    host=DBMS["ip"],
+                                    port=DBMS["port"])
+        elif DBMS['DBMS'] == 'MySQL':
+            if DBMS["user"] == '' or DBMS["password"] == '' or \
+                    DBMS["ip"] == '' or DBMS["port"] == '':
+                raise DBConnectorException
+            return mysql.connector.connect(database=DBMS['db'],
+                                           user=DBMS["user"],
+                                           password=DBMS["password"],
+                                           host=DBMS["ip"],
+                                           port=DBMS["port"])
+        elif DBMS['DBMS'] == 'SQLite':
+            return sqlite3.connect(DBMS['db'])
+        elif DBMS['DBMS'] == 'SQLServer':
+            if DBMS["user"] == '' or DBMS["password"] == '' or \
+                    DBMS["ip"] == '' or DBMS["port"] == '':
+                raise DBConnectorException
+            return pymssql.connect(server=DBMS["ip"],
+                                   user=DBMS["user"],
+                                   password=DBMS["password"],
+                                   database=DBMS['db'])
+        else:
+            raise DBConnectorException
 
     def getExperimentsData(self, experimentNumber):
-        cur = self.connector[0].cursor()
+        cur = self.connector['source'].cursor()
         cur.execute(f"SELECT tb_source, tb_target, changes FROM tb_names WHERE experiment_id = {experimentNumber}"
                     f" ORDER BY elements")
         tables = cur.fetchall()
@@ -72,10 +77,23 @@ class DBConnector:
 
         tablesData = []
 
-        for i in range(len(self.connector)):
-            cur = self.connector[i].cursor()
-            cur.execute(f"SELECT * FROM {tables[i]} ORDER BY id")
+        for i in [('source', 0), ('destination', 1)]:
+            cur = self.connector[i[0]].cursor()
+            cur.execute(f"SELECT * FROM {tables[i[1]]} ORDER BY id")
             tablesData.append(cur.fetchall())
             cur.close()
 
         return tablesData
+
+    def saveResults(self, results, tables):
+        program_id = 1
+        ts = datetime.datetime.now().timestamp()
+        db_info = dict(self.config)
+        del db_info['benchDB']
+        db_info['source']['table'] = tables[0]
+        db_info['destination']['table'] = tables[1]
+
+        cur = self.connector['benchDB'].cursor()
+        cur.execute(f"INSERT INTO tb_exp_run (program_id, timestamp, efficiency, db_info, changes)"
+                    f"VALUES ({program_id}, {ts}, {results['Efficiency']}, {db_info}, {results}")
+        cur.close()

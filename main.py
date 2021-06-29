@@ -3,7 +3,7 @@ import sys
 import json
 import argparse
 import os
-import importlib
+import DBConnector
 import importlib.util
 from json2table import convert
 
@@ -17,6 +17,7 @@ if __name__ == '__main__':
     parser.add_argument("--tableOut", "-to", help='Option for saving results in table.')
     parser.add_argument("--experiment", "-e", help='Option for specifying experiment id.', nargs='?')
     parser.add_argument("--tables", "-tb", help='Option for tables names for compare.', nargs='+')
+    parser.add_argument("--dbSave", "-ds", help='Option if save result in db is expected.', nargs='?')
     parser.add_argument('path', nargs='?', help='.py file with collection witch implement CompareCollection interface.'
                                                 'This collection will be benchmarked.')
     parser.add_argument('module', nargs='?', help='Name of module with collection for Benchmarking.')
@@ -36,8 +37,9 @@ if __name__ == '__main__':
                 file_w.write(json.dumps(parsed, sort_keys=True, indent=2))
     if args.template:
         with open(args.template + os.path.sep + 'config_template.json', 'w') as file_w:
-            template = {"Source": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""},
-                        "Destination": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""}}
+            template = {"source": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""},
+                        "destination": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""},
+                        "benchDB": {"DBMS": "", "ip": "", "port": "", "db": "", "user": "", "password": ""}}
             file_w.write(json.dumps(template, sort_keys=True, indent=2))
         sys.exit()
 
@@ -47,7 +49,9 @@ if __name__ == '__main__':
         spec.loader.exec_module(module)
         cdc = getattr(module, args.className)
 
-        benchmark = Benchmark()
+        dbSave = True if args.dbSave else False
+        benchmark = Benchmark(dbSave=dbSave)
+
         if args.experiment:
             result = benchmark.testCDCExperimentSet(cdc, args.experiment)
         else:
