@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "http://example.com/config_schema.json",
     "type": "object",
     "title": "CDC Benchmark config schema",
@@ -8,40 +8,40 @@
     "examples": [
         {
             "benchDB": {
-                "DBMS": "PostgreSQL",
-                "db": "bechdb1",
-                "ip": "92.242.58.173",
-                "user": "u_cdc",
-                "password": "P@ssword2021",
-                "port": 1984
+                "DBMS": "",
+                "db": "",
+                "ip": "",
+                "user": "",
+                "password": "",
+                "port": 3306
             },
             "destination": {
-                "DBMS": "SQLServer",
-                "db": "cdc1",
-                "ip": "84.252.141.244",
+                "DBMS": "",
+                "db": "",
+                "ip": "",
                 "user": "",
                 "password": "",
-                "port": 1984
+                "port": 3306
             },
             "source": {
-                "DBMS": "SQLServer",
-                "db": "cdc1",
-                "ip": "130.193.42.60",
+                "DBMS": "",
+                "db": "",
+                "ip": "",
                 "user": "",
                 "password": "",
-                "port": 1984
+                "port": 3306
             },
             "table_source": {
-                "name": "a_100",
-                "PK": "id"
+                "name": "",
+                "PK": ""
             },
             "table_destination": {
-                "name": "b_100",
-                "PK": "id"
+                "name": "",
+                "PK": ""
             },
             "SDS_param": {
-                "type": "MerkleTree",
-                "hash": "TigerHash"
+                "type": "",
+                "hash": ""
             },
             "Changeset_param": {
                 "content": {
@@ -49,7 +49,7 @@
                     "changetable": false,
                     "efficency": false
                 },
-                "changetable_type": "rows"
+                "changetable_type": ""
             }
         }
     ],
@@ -84,7 +84,7 @@
             "$ref": "http://example.com/table.schema.json"
         },
         "SDS_param": {
-            "$id": "#/properties/SDS_param",
+            "$id": "/properties/SDS_param",
             "type": "object",
             "title": "The SDS_param schema",
             "description": "Information about testing struct.",
@@ -101,7 +101,7 @@
             ],
             "properties": {
                 "type": {
-                    "$id": "#/properties/SDS_param/properties/type",
+                    "$id": "/properties/SDS_param/properties/type",
                     "type": "string",
                     "title": "The type schema",
                     "description": "Type of data structure for testing.",
@@ -111,7 +111,7 @@
                     ]
                 },
                 "hash": {
-                    "$id": "#/properties/SDS_param/properties/hash",
+                    "$id": "/properties/SDS_param/properties/hash",
                     "type": "string",
                     "title": "The hash schema",
                     "description": "Type of hash for data structure.",
@@ -124,7 +124,7 @@
             "additionalProperties": true
         },
         "Changeset_param": {
-            "$id": "#/properties/Changeset_param",
+            "$id": "/properties/Changeset_param",
             "type": "object",
             "title": "The Changeset_param schema",
             "description": "Parametrs of changset output.",
@@ -145,7 +145,7 @@
             ],
             "properties": {
                 "content": {
-                    "$id": "#/properties/Changeset_param/properties/content",
+                    "$id": "/properties/Changeset_param/properties/content",
                     "type": "object",
                     "title": "The content schema",
                     "description": "Content of output, which will be provide.",
@@ -164,17 +164,17 @@
                     ],
                     "properties": {
                         "answer": {
-                            "$id": "#/properties/Changeset_param/properties/content/properties/answer",
+                            "$id": "/properties/Changeset_param/properties/content/properties/answer",
                             "type": "boolean",
                             "title": "The answer schema",
                             "description": "If consistent or inconsistent value required.",
-                            "default": false,
+                            "default": true,
                             "examples": [
                                 true
                             ]
                         },
                         "changetable": {
-                            "$id": "#/properties/Changeset_param/properties/content/properties/changetable",
+                            "$id": "/properties/Changeset_param/properties/content/properties/changetable",
                             "type": "boolean",
                             "title": "The changetable schema",
                             "description": "If changetable required.",
@@ -184,7 +184,7 @@
                             ]
                         },
                         "efficency": {
-                            "$id": "#/properties/Changeset_param/properties/content/properties/efficency",
+                            "$id": "/properties/Changeset_param/properties/content/properties/efficency",
                             "type": "boolean",
                             "title": "The efficency schema",
                             "description": "If efficency data required.",
@@ -197,7 +197,7 @@
                     "additionalProperties": true
                 },
                 "changetable_type": {
-                    "$id": "#/properties/Changeset_param/properties/changetable_type",
+                    "$id": "/properties/Changeset_param/properties/changetable_type",
                     "type": "string",
                     "title": "The changetable_type schema",
                     "description": "Type of changetable, which will be returned if content.changetable is true.",

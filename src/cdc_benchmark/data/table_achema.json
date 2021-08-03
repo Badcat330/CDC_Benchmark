@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "http://example.com/table.schema.json",
     "type": "object",
     "title": "Schema for table in DB made for CDC Benchmark tool.",
@@ -17,7 +17,7 @@
     ],
     "properties": {
         "name": {
-            "$id": "#/properties/name",
+            "$id": "/properties/name",
             "type": "string",
             "title": "Table name",
             "description": "The name for table in DB.",
@@ -27,7 +27,7 @@
             ]
         },
         "PK": {
-            "$id": "#/properties/PK",
+            "$id": "/properties/PK",
             "type": "string",
             "title": "Table PK",
             "description": "The PK of table in DB.",

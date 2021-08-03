@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "http://example.com/DBMS.schema.json",
     "type": "object",
     "title": "DBMS-Connection",
@@ -8,11 +8,11 @@
     "examples": [
         {
             "DBMS": "PostgreSQL",
-            "db": "cdc1",
-            "ip": "92.242.62.1",
-            "user": "u_cdc",
-            "password": "Password01",
-            "port": 1984
+            "db": "DB_NAME",
+            "ip": "90.241.63.1",
+            "user": "USER_NAME",
+            "password": "PASSWORD",
+            "port": 3306
         }
     ],
     "required": [
@@ -25,7 +25,7 @@
         ],
     "properties": {
         "DBMS": {
-            "$id": "#/properties/DBMS",
+            "$id": "/properties/DBMS",
             "type": "string",
             "title": "DBMS driver",
             "description": "Name of the driver of DBMS",
@@ -35,17 +35,17 @@
             ]
         },
         "db": {
-            "$id": "#/properties/db",
+            "$id": "/properties/db",
             "type": "string",
             "title": "Database",
             "description": "Database name",
             "default": "",
             "examples": [
-                "cdc1"
+                "DB NAME"
             ]
         },
         "URL": {
-            "$id": "#/properties/url",
+            "$id": "/properties/url",
             "type": "string",
             "formate": "iri",
             "title": "URL",
@@ -56,38 +56,38 @@
             ]
         },
         "ip": {
-            "$id": "#/properties/ip",
+            "$id": "/properties/ip",
             "type": "string",
             "formate": "ipv4",
             "title": "IP",
             "description": "IP-Address of DBMS",
             "default": "",
             "examples": [
-                "92.242.62.1"
+                "90.241.63.1"
             ]
         },
         "user": {
-            "$id": "#/properties/user",
+            "$id": "/properties/user",
             "type": "string",
             "title": "User",
             "description": "User name",
             "default": "",
             "examples": [
-               "u_cdc"
+               "USERNAME"
             ]
         },
         "password": {
-            "$id": "#/properties/password",
+            "$id": "/properties/password",
             "type": "string",
             "title": "Password",
             "description": "User password",
             "default": "",
             "examples": [
-                "Password01"
+                "PASSWORD"
             ]
         },
         "port": {
-            "$id": "#//properties/port",
+            "$id": "//properties/port",
             "type": "number",
             "minimum": 0,
             "maximum": 65535,
@@ -95,7 +95,7 @@
             "description": "Port number of DBMS",
             "default": "",
             "examples": [
-                1984
+                3306
             ]
         }
     },
