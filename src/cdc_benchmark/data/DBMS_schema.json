@@ -1,0 +1,104 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/DBMS.schema.json",
+    "type": "object",
+    "title": "DBMS-Connection",
+    "description": "Schema for table in DB made for CDC Benchmark tool.",
+    "default": {},
+    "examples": [
+        {
+            "DBMS": "PostgreSQL",
+            "db": "cdc1",
+            "ip": "92.242.62.1",
+            "user": "u_cdc",
+            "password": "Password01",
+            "port": 1984
+        }
+    ],
+    "required": [
+            "DBMS",
+            "db",
+            "ip",
+            "port",
+            "user",
+            "password"
+        ],
+    "properties": {
+        "DBMS": {
+            "$id": "#/properties/DBMS",
+            "type": "string",
+            "title": "DBMS driver",
+            "description": "Name of the driver of DBMS",
+            "default": "",
+            "examples": [
+                "PostgreSQL"
+            ]
+        },
+        "db": {
+            "$id": "#/properties/db",
+            "type": "string",
+            "title": "Database",
+            "description": "Database name",
+            "default": "",
+            "examples": [
+                "cdc1"
+            ]
+        },
+        "URL": {
+            "$id": "#/properties/url",
+            "type": "string",
+            "formate": "iri",
+            "title": "URL",
+            "description": "URL of DBMS",
+            "default": "",
+            "examples": [
+                "http://mysite.com/db1:1984"
+            ]
+        },
+        "ip": {
+            "$id": "#/properties/ip",
+            "type": "string",
+            "formate": "ipv4",
+            "title": "IP",
+            "description": "IP-Address of DBMS",
+            "default": "",
+            "examples": [
+                "92.242.62.1"
+            ]
+        },
+        "user": {
+            "$id": "#/properties/user",
+            "type": "string",
+            "title": "User",
+            "description": "User name",
+            "default": "",
+            "examples": [
+               "u_cdc"
+            ]
+        },
+        "password": {
+            "$id": "#/properties/password",
+            "type": "string",
+            "title": "Password",
+            "description": "User password",
+            "default": "",
+            "examples": [
+                "Password01"
+            ]
+        },
+        "port": {
+            "$id": "#//properties/port",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 65535,
+            "title": "Port",
+            "description": "Port number of DBMS",
+            "default": "",
+            "examples": [
+                1984
+            ]
+        }
+    },
+    "additionalProperties": true
+}
+

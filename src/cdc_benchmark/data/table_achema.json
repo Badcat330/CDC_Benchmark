@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/table.schema.json",
+    "type": "object",
+    "title": "Schema for table in DB made for CDC Benchmark tool.",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "name": "tb_a",
+            "PK": "id"
+        }
+    ],
+    "required": [
+        "name",
+        "PK"
+    ],
+    "properties": {
+        "name": {
+            "$id": "#/properties/name",
+            "type": "string",
+            "title": "Table name",
+            "description": "The name for table in DB.",
+            "default": "",
+            "examples": [
+                "tb_a"
+            ]
+        },
+        "PK": {
+            "$id": "#/properties/PK",
+            "type": "string",
+            "title": "Table PK",
+            "description": "The PK of table in DB.",
+            "default": "",
+            "examples": [
+                "id"
+            ]
+        }
+    },
+    "additionalProperties": true
+}

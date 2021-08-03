@@ -1,0 +1,214 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/config_schema.json",
+    "type": "object",
+    "title": "CDC Benchmark config schema",
+    "description": "The config file schema for CDC Benchamrk tool.",
+    "default": {},
+    "examples": [
+        {
+            "benchDB": {
+                "DBMS": "PostgreSQL",
+                "db": "bechdb1",
+                "ip": "92.242.58.173",
+                "user": "u_cdc",
+                "password": "P@ssword2021",
+                "port": 1984
+            },
+            "destination": {
+                "DBMS": "SQLServer",
+                "db": "cdc1",
+                "ip": "84.252.141.244",
+                "user": "",
+                "password": "",
+                "port": 1984
+            },
+            "source": {
+                "DBMS": "SQLServer",
+                "db": "cdc1",
+                "ip": "130.193.42.60",
+                "user": "",
+                "password": "",
+                "port": 1984
+            },
+            "table_source": {
+                "name": "a_100",
+                "PK": "id"
+            },
+            "table_destination": {
+                "name": "b_100",
+                "PK": "id"
+            },
+            "SDS_param": {
+                "type": "MerkleTree",
+                "hash": "TigerHash"
+            },
+            "Changeset_param": {
+                "content": {
+                    "answer": true,
+                    "changetable": false,
+                    "efficency": false
+                },
+                "changetable_type": "rows"
+            }
+        }
+    ],
+    "required": [
+        "benchDB",
+        "destination",
+        "source",
+        "table_source",
+        "table_destination",
+        "SDS_param",
+        "Changeset_param"
+    ],
+    "properties": {
+        "benchDB": {
+            "description": "DBMC connection properties for DB with benchmark results.",
+            "$ref": "http://example.com/DBMS.schema.json"
+        },
+        "destination": {
+            "description": "DBMC connection properties for DB with destination tables.",
+            "$ref": "http://example.com/DBMS.schema.json"
+        },
+        "source": {
+            "description": "DBMC connection properties for DB with source table.",
+            "$ref": "http://example.com/DBMS.schema.json"
+        },
+        "table_source": {
+            "description": "DB source table information.",
+            "$ref": "http://example.com/table.schema.json"
+        },
+        "table_destination": {
+            "description": "DB destination information.",
+            "$ref": "http://example.com/table.schema.json"
+        },
+        "SDS_param": {
+            "$id": "#/properties/SDS_param",
+            "type": "object",
+            "title": "The SDS_param schema",
+            "description": "Information about testing struct.",
+            "default": {},
+            "examples": [
+                {
+                    "type": "MerkleTree",
+                    "hash": "TigerHash"
+                }
+            ],
+            "required": [
+                "type",
+                "hash"
+            ],
+            "properties": {
+                "type": {
+                    "$id": "#/properties/SDS_param/properties/type",
+                    "type": "string",
+                    "title": "The type schema",
+                    "description": "Type of data structure for testing.",
+                    "default": "",
+                    "examples": [
+                        "MerkleTree"
+                    ]
+                },
+                "hash": {
+                    "$id": "#/properties/SDS_param/properties/hash",
+                    "type": "string",
+                    "title": "The hash schema",
+                    "description": "Type of hash for data structure.",
+                    "default": "",
+                    "examples": [
+                        "TigerHash"
+                    ]
+                }
+            },
+            "additionalProperties": true
+        },
+        "Changeset_param": {
+            "$id": "#/properties/Changeset_param",
+            "type": "object",
+            "title": "The Changeset_param schema",
+            "description": "Parametrs of changset output.",
+            "default": {},
+            "examples": [
+                {
+                    "content": {
+                        "answer": true,
+                        "changetable": false,
+                        "efficency": false
+                    },
+                    "changetable_type": "rows"
+                }
+            ],
+            "required": [
+                "content",
+                "changetable_type"
+            ],
+            "properties": {
+                "content": {
+                    "$id": "#/properties/Changeset_param/properties/content",
+                    "type": "object",
+                    "title": "The content schema",
+                    "description": "Content of output, which will be provide.",
+                    "default": {},
+                    "examples": [
+                        {
+                            "answer": true,
+                            "changetable": false,
+                            "efficency": false
+                        }
+                    ],
+                    "required": [
+                        "answer",
+                        "changetable",
+                        "efficency"
+                    ],
+                    "properties": {
+                        "answer": {
+                            "$id": "#/properties/Changeset_param/properties/content/properties/answer",
+                            "type": "boolean",
+                            "title": "The answer schema",
+                            "description": "If consistent or inconsistent value required.",
+                            "default": false,
+                            "examples": [
+                                true
+                            ]
+                        },
+                        "changetable": {
+                            "$id": "#/properties/Changeset_param/properties/content/properties/changetable",
+                            "type": "boolean",
+                            "title": "The changetable schema",
+                            "description": "If changetable required.",
+                            "default": false,
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "efficency": {
+                            "$id": "#/properties/Changeset_param/properties/content/properties/efficency",
+                            "type": "boolean",
+                            "title": "The efficency schema",
+                            "description": "If efficency data required.",
+                            "default": false,
+                            "examples": [
+                                false
+                            ]
+                        }
+                    },
+                    "additionalProperties": true
+                },
+                "changetable_type": {
+                    "$id": "#/properties/Changeset_param/properties/changetable_type",
+                    "type": "string",
+                    "title": "The changetable_type schema",
+                    "description": "Type of changetable, which will be returned if content.changetable is true.",
+                    "default": "",
+                    "examples": [
+                        "rows"
+                    ]
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}

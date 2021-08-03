@@ -23,7 +23,8 @@ setuptools.setup(
         "Development Status :: 1 - Planning"
     ],
     package_dir={"": "src"},
-    packages=setuptools.find_packages(where="src"),
+    packages=["cdc_benchmark"],
+    package_data={'cdc_benchmark': ['data/*.json']},
     python_requires=">=3.9",
     install_requires=["psycopg2-binary", "mysql-connector-python", "pymssql", "json2table"],
     setup_requires=['pytest-runner'],
