@@ -26,7 +26,7 @@ setuptools.setup(
     packages=["cdc_benchmark"],
     package_data={'cdc_benchmark': ['data/*.json']},
     python_requires=">=3.9",
-    install_requires=["psycopg2-binary", "mysql-connector-python", "pymssql", "json2table"],
+    install_requires=["psycopg2-binary", "mysql-connector-python", "pymssql", "json2table", "jschon"],
     setup_requires=['pytest-runner'],
     tests_require=['pytest==4.4.1'],
     test_suite='tests',

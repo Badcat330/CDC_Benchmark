@@ -1,0 +1,26 @@
+{
+  "benchDB": {
+    "DBMS": "",
+    "db": "",
+    "ip": "",
+    "password": "",
+    "port": "",
+    "user": ""
+  },
+  "destination": {
+    "DBMS": "",
+    "db": "",
+    "ip": "",
+    "password": "",
+    "port": "",
+    "user": ""
+  },
+  "source": {
+    "DBMS": "",
+    "db": "",
+    "ip": "",
+    "password": "",
+    "port": "",
+    "user": ""
+  }
+}

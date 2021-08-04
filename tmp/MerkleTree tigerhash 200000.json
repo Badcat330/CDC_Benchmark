@@ -1,0 +1,14 @@
+{
+  "Answer": "Consistent",
+  "Changes table": "",
+  "Efficiency": {
+    "Build collection source time performance": "397502577007",
+    "Build collection source time monotonic": "397502581330",
+    "Build collection target time performance": "404320097550",
+    "Build collection target time monotonic": "404320104128",
+    "Compare collection time performance": "6359612",
+    "Compare collection time monotonic": "6358910",
+    "Whole benchmark time performance": "801869931744",
+    "Whole benchmark time monotonic": "801869930740"
+  }
+}

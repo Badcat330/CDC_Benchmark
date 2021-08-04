@@ -1,0 +1,49 @@
+{
+  "Input" : {
+    "benchDB": {
+      "DBMS": "PostgreSQL",
+      "db": "bechdb1",
+      "ip": "92.242.58.173",
+      "user": "u_cdc",
+      "password": "P@ssword2021",
+      "port": "1984"
+    },
+    "destination": {
+      "DBMS": "SQLServer",
+      "db": "cdc1",
+      "ip": "84.252.141.244",
+      "user": "sa",
+      "password": "P@sswordCinema",
+      "port": "1984"
+    },
+    "source": {
+      "DBMS": "SQLServer",
+      "db": "cdc1",
+      "ip": "130.193.42.60",
+      "user": "sa",
+      "password": "P@ssword2021",
+      "port": "1984"
+    },
+    "table_source": {
+      "name": "",
+      "PK": ""
+    },
+    "table_destination": {
+      "name": "",
+      "PK": ""
+    }
+  },
+  "Output": {
+    "SDS_param": {
+      "type": "MerkleTree"
+    },
+    "Changeset_param": {
+      "content" : {
+        "answer": true, 
+        "changetable": false,
+        "efficency": false
+      },
+      "changetable_type": "rows" 
+    } 
+  }
+}
