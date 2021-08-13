@@ -1,6 +1,5 @@
-from jschon import JSON, JSONSchema, Catalogue
+from jschon import JSON, JSONSchema, create_catalog
 from cdc_benchmark.benchmark_exceptions import NoConfigFoundException, InvalidConfigException
-from cdc_benchmark.benchmark import Benchmark
 import argparse
 import json
 import os
@@ -8,8 +7,8 @@ import sys
 import random
 
 
-def validate_config() -> dict:
-    Catalogue.create_default_catalogue('2020-12')
+def validate_test_config() -> dict:
+    create_catalog('2020-12', default=True)
 
     with open("src/cdc_benchmark/data/DBMS_schema.json", "r", encoding="utf-8") as fh:
         DBMS_schema = JSONSchema(json.loads(fh.read()))
@@ -39,8 +38,11 @@ def validate_config() -> dict:
         raise InvalidConfigException()
 
 def main():
-   validate_config()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("workflow_type", nargs=1, choices=['generator', 'test'], help="Type of cdc_benchmark workflow. Can be test or generator.")
+    args = parser.parse_args()
     
-
-if __name__ == '__main__':
-    main()
+    if args.workflow_type[0] == 'test':
+        print('test')
+    elif args.workflow_type[0] == 'generator':
+        print('generator')
