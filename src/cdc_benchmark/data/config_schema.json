@@ -40,7 +40,9 @@
                 "PK": ""
             },
             "SDS_param": {
-                "type": "",
+                "path": "",
+                "module": "",
+                "class": "",
                 "hash": ""
             },
             "Changeset_param": {
@@ -91,20 +93,44 @@
             "default": {},
             "examples": [
                 {
-                    "type": "MerkleTree",
+                    "path": "../../merkle_tree.py",
+                    "module": "merkle_tree",
+                    "class": "MerkleTree",
                     "hash": "TigerHash"
                 }
             ],
             "required": [
-                "type",
+                "path",
+                "module",
+                "class",
                 "hash"
             ],
             "properties": {
-                "type": {
-                    "$id": "/properties/SDS_param/properties/type",
+                "path": {
+                    "$id": "/properties/SDS_param/properties/path",
                     "type": "string",
-                    "title": "The type schema",
-                    "description": "Type of data structure for testing.",
+                    "title": "The path string",
+                    "description": "Path to *.py file with structure for testing.",
+                    "default": "",
+                    "examples": [
+                        "../../merkle_tree.py"
+                    ]
+                },
+                "module": {
+                    "$id": "/properties/SDS_param/properties/module",
+                    "type": "string",
+                    "title": "The module name",
+                    "description": "Name of module with structure class for testing.",
+                    "default": "",
+                    "examples": [
+                        "merkle_tree"
+                    ]
+                },
+                "class": {
+                    "$id": "/properties/SDS_param/properties/class",
+                    "type": "string",
+                    "title": "The class name",
+                    "description": "Name of data structure for testing.",
                     "default": "",
                     "examples": [
                         "MerkleTree"
