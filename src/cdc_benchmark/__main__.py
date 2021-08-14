@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+import subprocess
 import random
 
 
@@ -23,12 +24,12 @@ def validate_test_config() -> dict:
 
 
     if os.path.isdir('temporary'):
-        with open("temporary/config.json", "r", encoding="utf-8") as fh:
+        with open("temporary/test_config.json", "r", encoding="utf-8") as fh:
             config_row = json.loads(fh.read())
             config = JSON(config_row)
     else:
         os.mkdir('temporary')
-        with open("temporary/config.json", "w", encoding="utf-8") as fh:
+        with open("temporary/test_config.json", "w", encoding="utf-8") as fh:
             json.dump(default_config, fh, indent=4)
         raise NoConfigFoundException()
 
@@ -37,12 +38,42 @@ def validate_test_config() -> dict:
     else:
         raise InvalidConfigException()
 
+def open_config(name):
+    if os.path.isdir('temporary'):
+        subprocess.run(["vim", f"temporary/{name}_config.json"])
+    else:
+        os.mkdir('temporary')
+        with open("src/cdc_benchmark/data/config_schema.json", "r", encoding="utf-8") as fh:
+            config_schema_row = json.loads(fh.read())
+            default_config = config_schema_row["examples"][0]
+        
+        with open(f"temporary/{name}_config.json", "w", encoding="utf-8") as fh:
+            json.dump(default_config, fh, indent=4)
+        subprocess.run(["vim", f"temporary/{name}_config.json"])
+
+def give_config(name, path):
+    with open(path, "r", encoding="utf-8") as fh:
+        config_row = json.loads(fh.read())
+        config = config_row
+
+    with open(f"temporary/{name}_config.json", "w", encoding="utf-8") as fh:
+        json.dump(config, fh, indent=4)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("workflow_type", nargs=1, choices=['generator', 'test'], help="Type of cdc_benchmark workflow. Can be test or generator.")
+    parser.add_argument("--config", '-c', action='store_const', const=True, required=False, help="Flag for editing config.")
+    parser.add_argument("--params", '-p', nargs=1, required=False, help="Give Path for existing config.")
     args = parser.parse_args()
-    
-    if args.workflow_type[0] == 'test':
-        print('test')
+
+    if args.params:
+        give_config(args.workflow_type[0], args.params[0])
+
+    if args.config and not args.params:
+        open_config(args.workflow_type[0])
+    elif args.workflow_type[0] == 'test':
+        print("Validate config")
+        validate_test_config()
+        print("Config valid! Start testing!")
     elif args.workflow_type[0] == 'generator':
         print('generator')
