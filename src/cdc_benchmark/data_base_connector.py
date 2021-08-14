@@ -1,3 +1,4 @@
+from typing import NoReturn
 import psycopg2
 import sqlite3
 import mysql.connector
@@ -10,7 +11,7 @@ class DBConnectorException(ValueError):
 
 
 class DBConnector:
-    def __init__(self, config):
+    def __init__(self, config: dict) -> NoReturn:
         if config['db'] == '':
             raise DBConnectorException
 
@@ -46,7 +47,7 @@ class DBConnector:
             raise DBConnectorException
         
 
-    def getTableData(self, table_name, pk):
+    def getTableData(self, table_name: str, pk: str) -> dict:
         cur = self.connector.cursor()
         tablesData = {}
 
@@ -69,6 +70,6 @@ class DBConnector:
 
         return tablesData
 
-    def saveResults(self, results, tables):
+    def saveResults(self) -> NoReturn:
         #TODO: Think how save result in db
         pass
