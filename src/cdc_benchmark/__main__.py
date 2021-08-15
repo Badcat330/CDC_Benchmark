@@ -1,11 +1,10 @@
+from cdc_benchmark.benchmark import Benchmark
 from jschon import JSON, JSONSchema, create_catalog
 from cdc_benchmark.benchmark_exceptions import NoConfigFoundException, InvalidConfigException
 import argparse
 import json
 import os
-import sys
 import subprocess
-import random
 
 
 def validate_test_config() -> dict:
@@ -73,7 +72,12 @@ def main():
         open_config(args.workflow_type[0])
     elif args.workflow_type[0] == 'test':
         print("Validate config")
-        validate_test_config()
+        #TODO: Handle exceptions
+        config = validate_test_config()
         print("Config valid! Start testing!")
+        benchmark = Benchmark(config)
+        result = benchmark.start_benchmarking()
+        print("Finish benchmarking!")
+        print(result)
     elif args.workflow_type[0] == 'generator':
         print('generator')
