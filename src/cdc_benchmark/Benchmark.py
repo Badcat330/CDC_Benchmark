@@ -1,135 +1,125 @@
-from CompareCollection import CompareCollection
-from DBConnector import DBConnector
-from guppy import hpy
-from operator import itemgetter
+from typing import Any
+from cdc_benchmark.data_base_connector import DBConnector
+from collections import Mapping, Container
+from datetime import datetime
+from sys import getsizeof
+import importlib
 import time
-import json
+
+
 
 
 class Benchmark:
-    def __init__(self, dbSave=False):
-        self.benchmark_result = {
-            'Build collection source time performance': [],
-            'Build collection source time monotonic': [],
-            'Build collection target time performance': [],
-            'Build collection target time monotonic': [],
-            'Compare collection time performance': [],
-            'Compare collection time monotonic': [],
-            'Memory usage source': [],
-            'Memory usage target': [],
-            'Whole benchmark time performance': [],
-            'Whole benchmark time monotonic': [],
-        }
+    def __init__(self, config: dict) -> None:
+        self.table_source = config['table_source']
+        self.table_destination = config['table_destination']
+        self.changeset_param = config['Changeset_param']
 
-        self.dbSave = dbSave
+        #TODO: handle exception
+        self.benchDB = DBConnector(config['benchDB'])
+        self.destinationDB = DBConnector(config['destination'])
+        self.sourceDB = DBConnector(config['source'])
 
-        self.db = DBConnector()
+        SDS_param = config['SDS_param']
+        spec = importlib.util.spec_from_file_location(SDS_param['module'], SDS_param['path'])
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        testing_class = getattr(module, SDS_param['class'])
 
-    @staticmethod
-    def testBuildCollection(collection: CompareCollection, testData):
-        h = hpy()
-
-        start_perf = time.perf_counter_ns()
-        start_monotonic = time.monotonic_ns()
-        collection.build(testData)
-        end_perf = time.perf_counter_ns()
-        end_monotonic = time.monotonic_ns()
-
-        # for x in range(h.heap().size - 1):
-        #     print(h.heap()[x])
-
-        return str(end_perf - start_perf), str(end_monotonic - start_monotonic), h.iso(collection).indisize
+        self.source_struct = testing_class(hash=SDS_param['hash'])
+        self.destination_struct = testing_class(hash=SDS_param['hash'])
 
     @staticmethod
-    def testCompareCollection(collectionSource: CompareCollection, collectionTarget: CompareCollection):
-        start_perf = time.perf_counter_ns()
-        start_monotonic = time.monotonic_ns()
-        differance = collectionSource.compare(collectionTarget)
-        end_perf = time.perf_counter_ns()
-        end_monotonic = time.monotonic_ns()
+    def deep_getsizeof(o, ids=set()):
+        """Find the memory footprint of a Python object
+        This is a recursive function that rills down a Python object graph
+        like a dictionary holding nested ditionaries with lists of lists
+        and tuples and sets.
+        The sys.getsizeof function does a shallow size of only. It counts each
+        object inside a container as pointer only regardless of how big it
+        really is.
 
-        return str(end_perf - start_perf), str(end_monotonic - start_monotonic), differance
+        Made by https://github.com/the-gigi
 
-    def testCDCExperimentSet(self, collection, experiment_id=1):
-        gen_data = self.db.getExperimentsData(experiment_id)
-        self.benchmark_result["JSON correctness"] = []
+        :param o: the object
+        :param ids: temporary conatiner for id
+        :return: size in bytes
+        """
+        d = Benchmark.deep_getsizeof
+        if id(o) in ids:
+            return 0
 
-        for data in gen_data:
-            collectionSource = collection()
-            collectionTarget = collection()
+        r = getsizeof(o)
+        ids.add(id(o))
 
-            start_perf = time.perf_counter_ns()
-            start_monotonic = time.monotonic_ns()
+        if isinstance(o, str):
+            return r
 
-            results = self.testBuildCollection(collectionSource, data[0])
-            self.benchmark_result['Build collection source time performance'].append(results[0])
-            self.benchmark_result['Build collection source time monotonic'].append(results[1])
-            self.benchmark_result['Memory usage source'].append(results[2])
+        if isinstance(o, Mapping):
+            return r + sum(d(k, ids) + d(v, ids) for k, v in o.iteritems())
 
-            results = self.testBuildCollection(collectionTarget, data[1])
-            self.benchmark_result['Build collection target time performance'].append(results[0])
-            self.benchmark_result['Build collection target time monotonic'].append(results[1])
-            self.benchmark_result['Memory usage target'].append(results[2])
+        if isinstance(o, Container):
+            return r + sum(d(x, ids) for x in o)
 
-            results = self.testCompareCollection(collectionSource, collectionTarget)
-            self.benchmark_result['Compare collection time performance'].append(results[0])
-            self.benchmark_result['Compare collection time monotonic'].append(results[1])
-            changesExample = sorted(data[2], key=itemgetter('id'))
-            changesTest = sorted(results[2], key=itemgetter('id'))
-            self.benchmark_result['JSON correctness'].append(changesTest == changesExample)
+        return r
 
-            end_perf = time.perf_counter_ns()
-            end_monotonic = time.monotonic_ns()
+    @staticmethod
+    def ns_min(time_ns):
+        retult_time_min = datetime.fromtimestamp(time_ns // 1000000000)
+        retult_time_min = retult_time_min.strftime('%M:%S')
+        retult_time_min += '.' + str(int(time_ns % 1000000000)).zfill(9)
+        return retult_time_min
 
-            self.benchmark_result['Whole benchmark time performance'].append(str(end_perf - start_perf))
-            self.benchmark_result['Whole benchmark time monotonic'].append(str(end_monotonic - start_monotonic))
-
-        return self.benchmark_result
-
-    def testCDCCompareTables(self, collection, tables):
-        gen_data = self.db.getTablesData(tables)
-
-        answerJSON = {
-            "Answer": "",
-            "Changes table": "",
-            "Efficiency": ""
-        }
-
-        collectionSource = collection()
-        collectionTarget = collection()
+    def build_struct(self, db: DBConnector, table: dict, struct: Any) -> tuple[int, str]:
+        data = db.getTableData(table_name=table['name'], pk=table['PK'])
 
         start_perf = time.perf_counter_ns()
-        start_monotonic = time.monotonic_ns()
-
-        results = self.testBuildCollection(collectionSource, gen_data[0])
-        self.benchmark_result['Build collection source time performance'] = results[0]
-        self.benchmark_result['Build collection source time monotonic'] = results[1]
-        self.benchmark_result['Memory usage source'] = results[2]
-
-        results = self.testBuildCollection(collectionTarget, gen_data[1])
-        self.benchmark_result['Build collection target time performance'] = results[0]
-        self.benchmark_result['Build collection target time monotonic'] = results[1]
-        self.benchmark_result['Memory usage target'] = results[2]
-
-        results = self.testCompareCollection(collectionSource, collectionTarget)
-        self.benchmark_result['Compare collection time performance'] = results[0]
-        self.benchmark_result['Compare collection time monotonic'] = results[1]
-
-        if len(results[2]) == 0:
-            answerJSON["Answer"] = "Consistent"
-        else:
-            answerJSON["Answer"] = "Inconsistent"
-            answerJSON["Changes table"] = results[2]
-
+        struct.add_iter(data['key'], data['value'])
         end_perf = time.perf_counter_ns()
-        end_monotonic = time.monotonic_ns()
 
-        self.benchmark_result['Whole benchmark time performance'] = str(end_perf - start_perf)
-        self.benchmark_result['Whole benchmark time monotonic'] = str(end_monotonic - start_monotonic)
+        struct_size = Benchmark.deep_getsizeof(struct)
+        retult_time_min = Benchmark.ns_min(end_perf - start_perf)
 
-        answerJSON["Efficiency"] = self.benchmark_result
+        return struct_size, retult_time_min
 
-        if self.dbSave:
-            self.db.saveResults(answerJSON, tables)
+        
 
-        return answerJSON
+    def start_benchmarking(self):
+        result = {}
+        efficency = {}
+        start_perf = time.perf_counter_ns()
+        
+        efficency['source size'], efficency['source build time'] = self.build_struct(
+            self.sourceDB, 
+            self.table_source, 
+            self.source_struct)
+        efficency['destination size'], efficency['destination build time'] = self.build_struct(
+            self.destinationDB, 
+            self.table_destination, 
+            self.destination_struct)
+        
+        if self.changeset_param['content']['answer']:
+            start_perf_answer = time.perf_counter_ns()
+            answer = self.source_struct == self.destination_struct
+            end_perf_answer = time.perf_counter_ns()
+            answer_time = Benchmark.ns_min(end_perf_answer - start_perf_answer)
+            result['compare_answer'] = answer
+            efficency['compare time'] = answer_time
+
+        if self.changeset_param['content']['changetable']:
+            start_perf_chamgetable = time.perf_counter_ns()
+            chamgetable = self.source_struct.get_changeset(self.destination_struct)
+            end_perf_chamgetable = time.perf_counter_ns()
+            chamgetable_time = Benchmark.ns_min(end_perf_chamgetable - start_perf_chamgetable)
+            result['chamgetable'] = chamgetable
+            efficency['getting changetable time'] = chamgetable_time
+        end_perf = time.perf_counter_ns()
+
+        efficency['benchmark time'] = Benchmark.ns_min(end_perf - start_perf)
+
+        if self.changeset_param['content']['efficency']:
+            result['efficency'] = efficency
+
+        return result
+            
+
