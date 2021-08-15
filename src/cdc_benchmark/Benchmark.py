@@ -1,4 +1,5 @@
-from typing import Any
+from ast import Num
+from typing import Any, NoReturn
 from cdc_benchmark.data_base_connector import DBConnector
 from collections import Mapping, Container
 from datetime import datetime
@@ -10,7 +11,7 @@ import time
 
 
 class Benchmark:
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: dict) -> NoReturn:
         self.table_source = config['table_source']
         self.table_destination = config['table_destination']
         self.changeset_param = config['Changeset_param']
@@ -30,7 +31,7 @@ class Benchmark:
         self.destination_struct = testing_class(hash=SDS_param['hash'])
 
     @staticmethod
-    def deep_getsizeof(o, ids=set()):
+    def deep_getsizeof(o: object, ids: set=set()) -> Num:
         """Find the memory footprint of a Python object
         This is a recursive function that rills down a Python object graph
         like a dictionary holding nested ditionaries with lists of lists
@@ -64,7 +65,7 @@ class Benchmark:
         return r
 
     @staticmethod
-    def ns_min(time_ns):
+    def ns_min(time_ns: Num) -> str:
         retult_time_min = datetime.fromtimestamp(time_ns // 1000000000)
         retult_time_min = retult_time_min.strftime('%M:%S')
         retult_time_min += '.' + str(int(time_ns % 1000000000)).zfill(9)
@@ -84,7 +85,7 @@ class Benchmark:
 
         
 
-    def start_benchmarking(self):
+    def start_benchmarking(self) -> dict:
         result = {}
         efficency = {}
         start_perf = time.perf_counter_ns()
