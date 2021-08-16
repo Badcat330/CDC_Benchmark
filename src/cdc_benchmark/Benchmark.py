@@ -8,15 +8,13 @@ import importlib
 import time
 
 
-
-
 class Benchmark:
     def __init__(self, config: dict) -> NoReturn:
         self.table_source = config['table_source']
         self.table_destination = config['table_destination']
         self.changeset_param = config['Changeset_param']
 
-        #TODO: handle exception
+        # TODO: handle exception
         self.benchDB = DBConnector(config['benchDB'])
         self.destinationDB = DBConnector(config['destination'])
         self.sourceDB = DBConnector(config['source'])
@@ -31,7 +29,7 @@ class Benchmark:
         self.destination_struct = testing_class(hash=SDS_param['hash'])
 
     @staticmethod
-    def deep_getsizeof(o: object, ids: set=set()) -> Num:
+    def deep_getsizeof(o: object, ids: set = set()) -> Num:
         """Find the memory footprint of a Python object
         This is a recursive function that rills down a Python object graph
         like a dictionary holding nested ditionaries with lists of lists
@@ -83,22 +81,20 @@ class Benchmark:
 
         return struct_size, retult_time_min
 
-        
-
     def start_benchmarking(self) -> dict:
         result = {}
         efficency = {}
         start_perf = time.perf_counter_ns()
-        
+
         efficency['source size'], efficency['source build time'] = self.build_struct(
-            self.sourceDB, 
-            self.table_source, 
+            self.sourceDB,
+            self.table_source,
             self.source_struct)
         efficency['destination size'], efficency['destination build time'] = self.build_struct(
-            self.destinationDB, 
-            self.table_destination, 
+            self.destinationDB,
+            self.table_destination,
             self.destination_struct)
-        
+
         if self.changeset_param['content']['answer']:
             start_perf_answer = time.perf_counter_ns()
             answer = self.source_struct == self.destination_struct
@@ -122,5 +118,3 @@ class Benchmark:
             result['efficency'] = efficency
 
         return result
-            
-
