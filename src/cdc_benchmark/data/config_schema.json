@@ -49,7 +49,7 @@
                 "content": {
                     "answer": true,
                     "changetable": false,
-                    "efficency": false
+                    "efficiency": false
                 },
                 "changetable_type": ""
             }
@@ -160,7 +160,7 @@
                     "content": {
                         "answer": true,
                         "changetable": false,
-                        "efficency": false
+                        "efficiency": false
                     },
                     "changetable_type": "rows"
                 }
@@ -180,13 +180,13 @@
                         {
                             "answer": true,
                             "changetable": false,
-                            "efficency": false
+                            "efficiency": false
                         }
                     ],
                     "required": [
                         "answer",
                         "changetable",
-                        "efficency"
+                        "efficiency"
                     ],
                     "properties": {
                         "answer": {
@@ -209,11 +209,11 @@
                                 false
                             ]
                         },
-                        "efficency": {
-                            "$id": "/properties/Changeset_param/properties/content/properties/efficency",
+                        "efficiency": {
+                            "$id": "/properties/Changeset_param/properties/content/properties/efficiency",
                             "type": "boolean",
-                            "title": "The efficency schema",
-                            "description": "If efficency data required.",
+                            "title": "The efficiency schema",
+                            "description": "If efficiency data required.",
                             "default": false,
                             "examples": [
                                 false

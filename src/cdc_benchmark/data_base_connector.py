@@ -10,7 +10,7 @@ class DBConnectorException(ValueError):
 
 
 class DBConnector:
-    def __init__(self, config: dict) -> NoReturn:
+    def __init__(self, config: dict) -> None:
         if config['db'] == '':
             raise DBConnectorException
 
