@@ -1,7 +1,7 @@
-from ast import Num
+import collections
 from typing import Any, NoReturn
 from cdc_benchmark.data_base_connector import DBConnector
-from collections import Mapping, Container
+from collections import Mapping
 from datetime import datetime
 from sys import getsizeof
 import importlib
@@ -29,7 +29,7 @@ class Benchmark:
         self.destination_struct = testing_class(hash=SDS_param['hash'])
 
     @staticmethod
-    def deep_getsizeof(o: object, ids: set = set()) -> Num:
+    def deep_getsizeof(o: object, ids: set = None) -> int:
         """Find the memory footprint of a Python object
         This is a recursive function that rills down a Python object graph
         like a dictionary holding nested ditionaries with lists of lists
@@ -44,6 +44,9 @@ class Benchmark:
         :param ids: temporary conatiner for id
         :return: size in bytes
         """
+        if ids is None:
+            ids = set()
+
         d = Benchmark.deep_getsizeof
         if id(o) in ids:
             return 0
@@ -57,19 +60,20 @@ class Benchmark:
         if isinstance(o, Mapping):
             return r + sum(d(k, ids) + d(v, ids) for k, v in o.iteritems())
 
-        if isinstance(o, Container):
+        if isinstance(o, collections.Iterable):
             return r + sum(d(x, ids) for x in o)
 
         return r
 
     @staticmethod
-    def ns_min(time_ns: Num) -> str:
-        retult_time_min = datetime.fromtimestamp(time_ns // 1000000000)
-        retult_time_min = retult_time_min.strftime('%M:%S')
-        retult_time_min += '.' + str(int(time_ns % 1000000000)).zfill(9)
-        return retult_time_min
+    def ns_min(time_ns: int) -> str:
+        result_time_min = datetime.fromtimestamp(time_ns // 1000000000)
+        result_time_min = result_time_min.strftime('%M:%S')
+        result_time_min += '.' + str(int(time_ns % 1000000000)).zfill(9)
+        return result_time_min
 
-    def build_struct(self, db: DBConnector, table: dict, struct: Any) -> tuple[int, str]:
+    @staticmethod
+    def build_struct(db: DBConnector, table: dict, struct: Any) -> tuple[int, str]:
         data = db.getTableData(table_name=table['name'], pk=table['PK'])
 
         start_perf = time.perf_counter_ns()
@@ -77,20 +81,20 @@ class Benchmark:
         end_perf = time.perf_counter_ns()
 
         struct_size = Benchmark.deep_getsizeof(struct)
-        retult_time_min = Benchmark.ns_min(end_perf - start_perf)
+        result_time_min = Benchmark.ns_min(end_perf - start_perf)
 
-        return struct_size, retult_time_min
+        return struct_size, result_time_min
 
     def start_benchmarking(self) -> dict:
         result = {}
-        efficency = {}
+        efficiency = {}
         start_perf = time.perf_counter_ns()
 
-        efficency['source size'], efficency['source build time'] = self.build_struct(
+        efficiency['source size'], efficiency['source build time'] = self.build_struct(
             self.sourceDB,
             self.table_source,
             self.source_struct)
-        efficency['destination size'], efficency['destination build time'] = self.build_struct(
+        efficiency['destination size'], efficiency['destination build time'] = self.build_struct(
             self.destinationDB,
             self.table_destination,
             self.destination_struct)
@@ -101,20 +105,20 @@ class Benchmark:
             end_perf_answer = time.perf_counter_ns()
             answer_time = Benchmark.ns_min(end_perf_answer - start_perf_answer)
             result['compare_answer'] = answer
-            efficency['compare time'] = answer_time
+            efficiency['compare time'] = answer_time
 
         if self.changeset_param['content']['changetable']:
-            start_perf_chamgetable = time.perf_counter_ns()
-            chamgetable = self.source_struct.get_changeset(self.destination_struct)
-            end_perf_chamgetable = time.perf_counter_ns()
-            chamgetable_time = Benchmark.ns_min(end_perf_chamgetable - start_perf_chamgetable)
-            result['chamgetable'] = chamgetable
-            efficency['getting changetable time'] = chamgetable_time
+            start_perf_change_table = time.perf_counter_ns()
+            change_table = self.source_struct.get_changeset(self.destination_struct)
+            end_perf_change_table = time.perf_counter_ns()
+            change_table_time = Benchmark.ns_min(end_perf_change_table - start_perf_change_table)
+            result['change table'] = change_table
+            efficiency['getting change table time'] = change_table_time
         end_perf = time.perf_counter_ns()
 
-        efficency['benchmark time'] = Benchmark.ns_min(end_perf - start_perf)
+        efficiency['benchmark time'] = Benchmark.ns_min(end_perf - start_perf)
 
         if self.changeset_param['content']['efficency']:
-            result['efficency'] = efficency
+            result['efficiency'] = efficiency
 
         return result
