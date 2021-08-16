@@ -21,7 +21,6 @@ def validate_test_config() -> dict:
         default_config = config_schema_row["examples"][0]
         config_schema = JSONSchema(config_schema_row)
 
-
     if os.path.isdir('temporary'):
         with open("temporary/test_config.json", "r", encoding="utf-8") as fh:
             config_row = json.loads(fh.read())
@@ -37,6 +36,7 @@ def validate_test_config() -> dict:
     else:
         raise InvalidConfigException()
 
+
 def open_config(name):
     if os.path.isdir('temporary'):
         subprocess.run(["vim", f"temporary/{name}_config.json"])
@@ -45,10 +45,11 @@ def open_config(name):
         with open("src/cdc_benchmark/data/config_schema.json", "r", encoding="utf-8") as fh:
             config_schema_row = json.loads(fh.read())
             default_config = config_schema_row["examples"][0]
-        
+
         with open(f"temporary/{name}_config.json", "w", encoding="utf-8") as fh:
             json.dump(default_config, fh, indent=4)
         subprocess.run(["vim", f"temporary/{name}_config.json"])
+
 
 def give_config(name, path):
     with open(path, "r", encoding="utf-8") as fh:
@@ -58,10 +59,13 @@ def give_config(name, path):
     with open(f"temporary/{name}_config.json", "w", encoding="utf-8") as fh:
         json.dump(config, fh, indent=4)
 
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("workflow_type", nargs=1, choices=['generator', 'test'], help="Type of cdc_benchmark workflow. Can be test or generator.")
-    parser.add_argument("--config", '-c', action='store_const', const=True, required=False, help="Flag for editing config.")
+    parser.add_argument("workflow_type", nargs=1, choices=['generator', 'test'],
+                        help="Type of cdc_benchmark workflow. Can be test or generator.")
+    parser.add_argument("--config", '-c', action='store_const', const=True, required=False,
+                        help="Flag for editing config.")
     parser.add_argument("--params", '-p', nargs=1, required=False, help="Give Path for existing config.")
     args = parser.parse_args()
 
@@ -72,7 +76,7 @@ def main():
         open_config(args.workflow_type[0])
     elif args.workflow_type[0] == 'test':
         print("Validate config")
-        #TODO: Handle exceptions
+        # TODO: Handle exceptions
         config = validate_test_config()
         print("Config valid! Start testing!")
         benchmark = Benchmark(config)

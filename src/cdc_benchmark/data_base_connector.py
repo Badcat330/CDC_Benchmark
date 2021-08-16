@@ -5,7 +5,6 @@ import mysql.connector
 import pymssql
 
 
-
 class DBConnectorException(ValueError):
     pass
 
@@ -20,19 +19,19 @@ class DBConnector:
                     config["ip"] == '' or config["port"] == '':
                 raise DBConnectorException
             self.connector = psycopg2.connect(dbname=config['db'],
-                                    user=config["user"],
-                                    password=config["password"],
-                                    host=config["ip"],
-                                    port=config["port"])
+                                              user=config["user"],
+                                              password=config["password"],
+                                              host=config["ip"],
+                                              port=config["port"])
         elif config['DBMS'] == 'MySQL':
             if config["user"] == '' or config["password"] == '' or \
                     config["ip"] == '' or config["port"] == '':
                 raise DBConnectorException
             self.connector = mysql.connector.connect(database=config['db'],
-                                           user=config["user"],
-                                           password=config["password"],
-                                           host=config["ip"],
-                                           port=config["port"])
+                                                     user=config["user"],
+                                                     password=config["password"],
+                                                     host=config["ip"],
+                                                     port=config["port"])
         elif config['DBMS'] == 'SQLite':
             self.connector = sqlite3.connect(config['db'])
         elif config['DBMS'] == 'SQLServer':
@@ -40,12 +39,11 @@ class DBConnector:
                     config["ip"] == '' or config["port"] == '':
                 raise DBConnectorException
             self.connector = pymssql.connect(server=config["ip"],
-                                   user=config["user"],
-                                   password=config["password"],
-                                   database=config['db'])
+                                             user=config["user"],
+                                             password=config["password"],
+                                             database=config['db'])
         else:
             raise DBConnectorException
-        
 
     def getTableData(self, table_name: str, pk: str) -> dict:
         cur = self.connector.cursor()
@@ -71,5 +69,5 @@ class DBConnector:
         return tablesData
 
     def saveResults(self) -> NoReturn:
-        #TODO: Think how save result in db
+        # TODO: Think how save result in db
         pass

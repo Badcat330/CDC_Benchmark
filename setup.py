@@ -30,7 +30,7 @@ setuptools.setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest==4.4.1'],
     test_suite='tests',
-    entry_points = {
+    entry_points={
         'console_scripts': ['cdc_benchmark=cdc_benchmark.__main__:main'],
     },
 )
