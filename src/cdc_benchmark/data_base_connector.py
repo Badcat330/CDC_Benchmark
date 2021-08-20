@@ -62,10 +62,9 @@ class DBConnector:
         SELECT {pk} FROM {table_name};
         """)
 
-        tablesData['keys'] = cur.fetchall()
+        tablesData['keys'] =  [i[0] for i in cur.fetchall()]
 
         cur.close()
-
         return tablesData
 
     def saveResults(self) -> NoReturn:

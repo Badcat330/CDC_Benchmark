@@ -82,6 +82,6 @@ def main():
         benchmark = Benchmark(config)
         result = benchmark.start_benchmarking()
         print("Finish benchmarking!")
-        print(result)
+        print(json.dumps(result, indent=4))
     elif args.workflow_type[0] == 'generator':
         print('generator')
