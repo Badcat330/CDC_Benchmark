@@ -15,8 +15,18 @@ class Benchmark:
 
         # TODO: handle exception
         self.benchDB = DBConnector(config['benchDB'])
-        self.destinationDB = DBConnector(config['destination'])
-        self.sourceDB = DBConnector(config['source'])
+
+        if config['benchDB'] == config['destination']:
+            self.destinationDB = self.benchDB
+        else:
+            self.destinationDB = DBConnector(config['destination'])
+
+        if config['destination'] == config['source']:
+            self.sourceDB = self.destinationDB
+        elif config['benchDB'] == config['source']:
+            self.sourceDB = self.benchDB
+        else:
+            self.sourceDB = DBConnector(config['source'])
 
         SDS_param = config['SDS_param']
         spec = importlib.util.spec_from_file_location(SDS_param['module'], SDS_param['path'])
@@ -88,19 +98,19 @@ class Benchmark:
         result = {}
         efficiency = {}
         start_perf = time.perf_counter_ns()
-        print("Strart building source struct!")
+        print("Start building source struct!")
         efficiency['source size'], efficiency['source build time'] = self.build_struct(
             self.sourceDB,
             self.table_source,
             self.source_struct)
-        print("Strart building destination struct!")
+        print("Start building destination struct!")
         efficiency['destination size'], efficiency['destination build time'] = self.build_struct(
-            self.sourceDB,
+            self.destinationDB,
             self.table_destination,
             self.destination_struct)
 
         if self.changeset_param['content']['answer']:
-            print("Checking equvalens!")
+            print("Checking equivalents!")
             start_perf_answer = time.perf_counter_ns()
             answer = self.source_struct == self.destination_struct
             end_perf_answer = time.perf_counter_ns()
