@@ -43,7 +43,8 @@
                 "path": "",
                 "module": "",
                 "class": "",
-                "hash": ""
+                "hash": "",
+                "requirements": []
             },
             "Changeset_param": {
                 "content": {
@@ -96,14 +97,16 @@
                     "path": "../../merkle_tree.py",
                     "module": "merkle_tree",
                     "class": "MerkleTree",
-                    "hash": "TigerHash"
+                    "hash": "TigerHash",
+                    "requirements": ["blake3", "tigerhash"]
                 }
             ],
             "required": [
                 "path",
                 "module",
                 "class",
-                "hash"
+                "hash",
+                "requirements"
             ],
             "properties": {
                 "path": {
@@ -144,6 +147,19 @@
                     "default": "",
                     "examples": [
                         "TigerHash"
+                    ]
+                },
+                "requirements": {
+                    "$id": "/properties/SDS_param/properties/requirements",
+                    "type": "array",
+                    "title": "The requirements array",
+                    "description": "Requirements for data structure.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": "",
+                    "examples": [
+                        ["blake3", "tigerhash"]
                     ]
                 }
             },

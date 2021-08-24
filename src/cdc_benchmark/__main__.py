@@ -67,6 +67,7 @@ def main():
     parser.add_argument("--config", '-c', action='store_const', const=True, required=False,
                         help="Flag for editing config.")
     parser.add_argument("--params", '-p', nargs=1, required=False, help="Give Path for existing config.")
+    parser.add_argument("--file", '-f', nargs=1, required=False, help="Give Path for saving output to file.")
     args = parser.parse_args()
 
     if args.params:
@@ -82,6 +83,11 @@ def main():
         benchmark = Benchmark(config)
         result = benchmark.start_benchmarking()
         print("Finish benchmarking!")
-        print(json.dumps(result, indent=4))
+        if args.file:
+            name = "benchmark_result_" + benchmark.name + ".json"
+            with open(os.path.join(args.file[0], name), "w", encoding="utf-8") as fh:
+                json.dump(result, fh, indent=4)
+        else:
+            print(json.dumps(result, indent=4))
     elif args.workflow_type[0] == 'generator':
         print('generator')

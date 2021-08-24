@@ -2,7 +2,8 @@ from typing import Any, NoReturn
 from cdc_benchmark.data_base_connector import DBConnector
 from collections.abc import Mapping, Iterable
 from datetime import datetime
-from sys import getsizeof
+from sys import getsizeof, executable
+from subprocess import check_call
 import importlib
 import time
 
@@ -29,6 +30,8 @@ class Benchmark:
             self.sourceDB = DBConnector(config['source'])
 
         SDS_param = config['SDS_param']
+        for package in SDS_param['requirements']:
+            check_call([executable, "-m", "pip", "install", package])
         spec = importlib.util.spec_from_file_location(SDS_param['module'], SDS_param['path'])
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -36,6 +39,9 @@ class Benchmark:
 
         self.source_struct = testing_class(hash=SDS_param['hash'])
         self.destination_struct = testing_class(hash=SDS_param['hash'])
+
+        self.name = SDS_param["class"] + "_" + SDS_param["hash"] + "_" + self.table_source['name'] + "_" + \
+                    self.table_destination['name']
 
     @staticmethod
     def deep_getsizeof(o: object, ids: set = None) -> int:
@@ -109,26 +115,27 @@ class Benchmark:
             self.table_destination,
             self.destination_struct)
 
+        print("Checking equivalents!")
+        start_perf_answer = time.perf_counter_ns()
+        answer = self.source_struct == self.destination_struct
+        end_perf_answer = time.perf_counter_ns()
+        answer_time = Benchmark.ns_min(end_perf_answer - start_perf_answer)
+        efficiency['compare time'] = answer_time
+
+        print("Start getting changeset!")
+        start_perf_change_table = time.perf_counter_ns()
+        change_table = self.source_struct.get_changeset(self.destination_struct)
+        end_perf_change_table = time.perf_counter_ns()
+        change_table_time = Benchmark.ns_min(end_perf_change_table - start_perf_change_table)
+        efficiency['getting change table time'] = change_table_time
+        end_perf = time.perf_counter_ns()
+        efficiency['benchmark time'] = Benchmark.ns_min(end_perf - start_perf)
+
         if self.changeset_param['content']['answer']:
-            print("Checking equivalents!")
-            start_perf_answer = time.perf_counter_ns()
-            answer = self.source_struct == self.destination_struct
-            end_perf_answer = time.perf_counter_ns()
-            answer_time = Benchmark.ns_min(end_perf_answer - start_perf_answer)
             result['compare_answer'] = answer
-            efficiency['compare time'] = answer_time
 
         if self.changeset_param['content']['changetable']:
-            print("Start getting changeset!")
-            start_perf_change_table = time.perf_counter_ns()
-            change_table = self.source_struct.get_changeset(self.destination_struct)
-            end_perf_change_table = time.perf_counter_ns()
-            change_table_time = Benchmark.ns_min(end_perf_change_table - start_perf_change_table)
             result['change table'] = change_table
-            efficiency['getting change table time'] = change_table_time
-        end_perf = time.perf_counter_ns()
-
-        efficiency['benchmark time'] = Benchmark.ns_min(end_perf - start_perf)
 
         if self.changeset_param['content']['efficiency']:
             result['efficiency'] = efficiency
