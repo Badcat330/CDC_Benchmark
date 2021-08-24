@@ -143,3 +143,5 @@ cython_debug/
 # Temporary file
 /temporary/*
 /tmp/*
+
+.DS_Store
