@@ -1,7 +1,6 @@
-import collections
 from typing import Any, NoReturn
 from cdc_benchmark.data_base_connector import DBConnector
-from collections import Mapping
+from collections.abc import Mapping, Iterable
 from datetime import datetime
 from sys import getsizeof
 import importlib
@@ -37,9 +36,7 @@ class Benchmark:
         The sys.getsizeof function does a shallow size of only. It counts each
         object inside a container as pointer only regardless of how big it
         really is.
-
         Made by https://github.com/the-gigi
-
         :param o: the object
         :param ids: temporary conatiner for id
         :return: size in bytes
@@ -54,13 +51,17 @@ class Benchmark:
         r = getsizeof(o)
         ids.add(id(o))
 
+        if hasattr(o, '__dict__'):
+            v = o.__dict__
+            return r + sum(d(v[k], ids) for k in v)
+
         if isinstance(o, str):
             return r
 
         if isinstance(o, Mapping):
-            return r + sum(d(k, ids) + d(v, ids) for k, v in o.iteritems())
+            return r + sum(d(k, ids) + d(o[k], ids) for k in o)
 
-        if isinstance(o, collections.Iterable):
+        if isinstance(o, Iterable):
             return r + sum(d(x, ids) for x in o)
 
         return r
@@ -78,8 +79,7 @@ class Benchmark:
         start_perf = time.perf_counter_ns()
         struct.add_iter(data['keys'], data['values'])
         end_perf = time.perf_counter_ns()
-        # struct_size = Benchmark.deep_getsizeof(struct)
-        struct_size = 0
+        struct_size = Benchmark.deep_getsizeof(struct)
         result_time_min = Benchmark.ns_min(end_perf - start_perf)
 
         return struct_size, result_time_min
