@@ -64,7 +64,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("workflow_type", nargs=1, choices=['generator', 'test'],
                         help="Type of cdc_benchmark workflow. Can be test or generator.")
-    parser.add_argument("--config", '-c', action='store_const', const=True, required=False,
+    parser.add_argument("--edit", '-e', action='store_const', const=True, required=False,
                         help="Flag for editing config.")
     parser.add_argument("--params", '-p', nargs=1, required=False, help="Give Path for existing config.")
     parser.add_argument("--file", '-f', nargs=1, required=False, help="Give Path for saving output to file.")
@@ -73,7 +73,7 @@ def main():
     if args.params:
         give_config(args.workflow_type[0], args.params[0])
 
-    if args.config and not args.params:
+    if args.edit and not args.params:
         open_config(args.workflow_type[0])
     elif args.workflow_type[0] == 'test':
         print("Validate config")
