@@ -92,9 +92,9 @@ class Benchmark:
     @staticmethod
     def build_struct(db: DBConnector, table: dict, struct: Any) -> tuple[int, str]:
         data = db.getTableData(table_name=table['name'], pk=table['PK'])
-        start_perf = time.perf_counter_ns()
+        start_perf = time.monotonic_ns()
         struct.add_iter(data['keys'], data['values'])
-        end_perf = time.perf_counter_ns()
+        end_perf = time.monotonic_ns()
         struct_size = Benchmark.deep_getsizeof(struct)
         result_time_min = Benchmark.ns_min(end_perf - start_perf)
 
@@ -103,7 +103,7 @@ class Benchmark:
     def start_benchmarking(self) -> dict:
         result = {}
         efficiency = {}
-        start_perf = time.perf_counter_ns()
+        start_perf = time.monotonic_ns()
         print("Start building source struct!")
         efficiency['source size'], efficiency['source build time'] = self.build_struct(
             self.sourceDB,
@@ -116,19 +116,19 @@ class Benchmark:
             self.destination_struct)
 
         print("Checking equivalents!")
-        start_perf_answer = time.perf_counter_ns()
+        start_perf_answer = time.monotonic_ns()
         answer = self.source_struct == self.destination_struct
-        end_perf_answer = time.perf_counter_ns()
+        end_perf_answer = time.monotonic_ns()
         answer_time = Benchmark.ns_min(end_perf_answer - start_perf_answer)
         efficiency['compare time'] = answer_time
 
         print("Start getting changeset!")
-        start_perf_change_table = time.perf_counter_ns()
+        start_perf_change_table = time.monotonic_ns()
         change_table = self.source_struct.get_changeset(self.destination_struct)
-        end_perf_change_table = time.perf_counter_ns()
+        end_perf_change_table = time.monotonic_ns()
         change_table_time = Benchmark.ns_min(end_perf_change_table - start_perf_change_table)
         efficiency['getting change table time'] = change_table_time
-        end_perf = time.perf_counter_ns()
+        end_perf = time.monotonic_ns()
         efficiency['benchmark time'] = Benchmark.ns_min(end_perf - start_perf)
 
         if self.changeset_param['content']['answer']:
