@@ -1,56 +1,74 @@
 import pandas as pd
-from pandas.util.testing import rands_array
+from pandas._testing import rands_array
 import numpy as np
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 import json
 from openpyxl import load_workbook
 import os.path
-
-
-class CDCGeneratorException(ValueError):
-    pass
+import time
+from timeit import default_timer as timer
+from datetime import datetime
+import logging
 
 
 class CDCGenerator:
     def __init__(self, config_file):
         self.set_config(config_file)
         self.tb_names = pd.DataFrame(columns=["experiment_id","tb_source","elements","tb_target","changes"])
+        self.start=0
+        logging.basicConfig(filename='CDCGenerator.log',level=logging.INFO)
 
     def set_config(self, config_file: str):
         with open(config_file) as json_file:
             self.config = json.load(json_file)
-        self.rows_count = [cc for cc in range(self.config["rows_min_count"],
-                                                  self.config["rows_max_count"] + self.config["rows_step"],
-                                                  self.config["rows_step"])]
-        self.columns_count = [cc for cc in range(self.config["columns_min_count"],
-                                                 self.config["columns_max_count"] + self.config["columns_step"],
-                                                 self.config["columns_step"])]
-        self.df_schema = self.get_df_schema(is_absolute=self.config["columnsIsAbsolute"],
-                                            icount=self.config["columns_int"],
-                                            fcount=self.config["columns_float"],
-                                            scount=self.config["columns_string"])
+        if self.config["rows_min_count"]==0 or self.config["rows_max_count"]==0 or self.config["columns_min_count"]==0 \
+                or self.config["columns_max_count"]==0:
+            print("rows_min_count,rows_max_count,columns_min_count,columns_max_count should be greater than 0 ")
+            raise ValueError
+        if self.config["rows_step"]==0:
+                self.rows_count=[self.config["rows_min_count"]]
+        else:
+                self.rows_count = [cc for cc in range(self.config["rows_min_count"],
+                                                          self.config["rows_max_count"] + self.config["rows_step"],
+                                                          self.config["rows_step"])]
+        if self.config["columns_step"]==0:
+                self.columns_count=[self.config["columns_min_count"]]
+        else:
+                self.columns_count = [cc for cc in range(self.config["columns_min_count"],
+                                                         self.config["columns_max_count"] + self.config["columns_step"],
+                                                         self.config["columns_step"])]
 
-    def exp_create(self):
+    def exp_create(self,where_to_save=None,save_tb_name_updates=False):
         dt_changes={}
+        logging.info("!")
+        logging.info(time.strftime("%H:%M:%S", time.gmtime(time.time())) + " Generating is started")
+        self.start = time.time()
         for rc in self.rows_count:
             for cc in self.columns_count:
+                self.df_schema = self.get_df_schema(is_absolute=self.config["columnsIsAbsolute"],
+                                                    icount=self.config["columns_int"],
+                                                    fcount=self.config["columns_float"],
+                                                    scount=self.config["columns_string"],
+                                                    total=cc)
                 dfa = self.get_df(rows_count=rc)
-                dfb,changes = self.make_df_changes(dfa, is_absolute=self.config["changesIsAbsolute"],
-                                           ucount=self.config["updates"],
-                                           dcount=self.config["deletes"],
-                                           icount=self.config["inserts"])
+                dfb,changes = self.make_df_changes(dfa,ucount=self.config["updates"],dcount=self.config["deletes"],icount=self.config["inserts"])
+
                 dfa_name = "a" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
                 dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
-                #print(type(json.dumps(changes)))
                 ss = json.dumps(changes)
                 dt_changes[dfa_name] = [self.config["exp_id"],dfa_name,rc,dfb_name,ss]
-
-                #self.save_to_db(dfa, dfa_name)
-                #self.save_to_db(dfb, dfb_name)
-        self.tb_name_update(dt_changes)
-                # self.save_to_excel(dfa,"T2.xlsx",dfa_name)
-                # self.save_to_excel(dfb,"T2.xlsx",dfb_name)
+                if where_to_save == "db":
+                    temp_time = time.time()
+                    self.save_to_db(dfa, dfa_name)
+                    self.save_to_db(dfb, dfb_name)
+                    logging.info(time.strftime("%H:%M:%S", time.gmtime(time.time()-temp_time)) + " takes to save tables to db")
+                elif where_to_save == "excel":
+                    self.save_to_excel(dfa,str(self.start)+ ".xlsx",dfa_name)
+                    self.save_to_excel(dfb,str(self.start)+ ".xlsx",dfb_name)
+                if save_tb_name_updates is True:
+                    self.tb_name_update(dt_changes)
+        logging.info(str(datetime.fromtimestamp(time.time())-datetime.fromtimestamp(self.start)) + " Generating is finished")
 
     def exp_delete(self):
         query = ""
@@ -71,10 +89,7 @@ class CDCGenerator:
         with engine.connect() as con:
             statement = text(query)
             con.execute(statement)
-        self.tb_name_update("delete")
-
-    def validate_schema(self, path):
-        pass
+        self.tb_name_update(op="delete")
 
     def get_df_schema(self, is_absolute=True, icount=1, fcount=0, scount=0, total=1) -> dict:
         """ isAbsolute - icount,fcount,scount contain absolute numbers or percents from total
@@ -86,10 +101,14 @@ class CDCGenerator:
         df_schema = {}
         if is_absolute == "False":
             if (icount + fcount + scount) != 100:
-                raise CDCGeneratorException('Total percentage should be 100%')
+                print('Total percentage should be 100%')
+                raise ValueError
+
             icount = int(total * (icount / 100))
             fcount = int(total * (fcount / 100))
             scount = int(total * (scount / 100))
+            if (icount+fcount+scount)<total:
+                icount += total-(icount+fcount+scount)
         for i in range(icount):
             col_name = "i" + str(i)
             df_schema[col_name] = int()
@@ -114,7 +133,6 @@ class CDCGenerator:
                 df[cname] = pd.Series(np.random.rand(rows_count))
             elif type(ctype) == str:
                 df[cname] = pd.Series(pd.util.testing.rands_array(char_count, rows_count))
-        #df["old"] = ""
         return df
 
     def make_df_changes(self, dataframe, is_absolute=True, ucount=1, dcount=0, icount=0, total=1):
@@ -129,7 +147,8 @@ class CDCGenerator:
         dataframe = dataframe.copy()
         if is_absolute is False:
             if icount + dcount + ucount != 100:
-                raise CDCGeneratorException('Total percentage should be 100%')
+                print('Total percentage should be 100%')
+                raise ValueError
             icount = int(total * (icount / 100))
             ucount = int(total * (dcount / 100))
             dcount = int(total * (ucount / 100))
@@ -190,9 +209,10 @@ class CDCGenerator:
         try:
             connection_string = self.config["db_cs"]
             conn = create_engine(connection_string)
-            dataframe.to_sql(tb_name, conn, if_exists='replace')
+            dataframe.to_sql(tb_name, conn, if_exists='replace',index=False)
         except Exception as e:
             print(e)
+
 
     def save_to_excel(self, dataframe: pd.DataFrame, file_name, sheet_name="Sheet1"):
         try:
@@ -207,3 +227,8 @@ class CDCGenerator:
                 dataframe.to_excel(file_name, sheet_name)
         except Exception as e:
             print(e)
+
+if __name__ == '__main__':
+    gen = CDCGenerator('CDCGenerator_config1.json')
+    #gen.exp_create(where_to_save = "db")
+    gen.exp_delete()
