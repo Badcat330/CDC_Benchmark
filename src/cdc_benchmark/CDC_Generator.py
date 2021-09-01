@@ -18,6 +18,7 @@ class CDCGenerator:
         self.tb_names = pd.DataFrame(columns=["experiment_id", "tb_source", "elements", "tb_target", "changes"])
         self.start = 0
         logging.basicConfig(filename='CDCGenerator.log', level=logging.INFO)
+        self.dfa = pd.DataFrame()
 
     def set_config(self, config_file: str):
         with open(config_file) as json_file:
@@ -48,17 +49,16 @@ class CDCGenerator:
             logging.debug("ColumnsIsAbsolute is True. Values columns_int, columns_float,columns_string are absolut. "
                           "Values of total,columns_min_count,columns_max_count,columns_step are not using.")
             for rc in self.rows_count:
-                    self.df_schema = self.get_df_schema(is_absolute=self.config["columnsIsAbsolute"],
-                                                        icount=self.config["columns_int"],
-                                                        fcount=self.config["columns_float"],
-                                                        scount=self.config["columns_string"])
-                    dfa = self.get_df(rows_count=rc)
-                    #cc = self.config["columns_int"] + self.config["columns_float"] + self.config["columns_string"] # total number of columns
-                    dfb,changes = self.make_rows_changes(dfa, ucount=self.config["updates"], dcount=self.config["deletes"], icount=self.config["inserts"])
-                    dfa_name = "a" + str(self.config["exp_id"]) + "_c" + str(len(dfa.columns)) + "_r" + str(rc)
-                    dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(len(dfa.columns)) + "_r" + str(rc)
+                    self.df_schema = self.get_df_schema(is_absolute=self.config["columnsIsAbsolute"], icount=self.config["columns_int"], fcount=self.config["columns_float"], scount=self.config["columns_string"])
+                    self.dfa = self.get_df(rows_count=rc)
+                    dfa_name = "a" + str(self.config["exp_id"]) + "_c" + str(len(self.dfa.columns)) + "_r" + str(rc)
+                    self.where_to_save(self.dfa,dfa_name)
+                    # make changes in the self.dfa dataframe
+                    changes = self.make_rows_changes(self.dfa, ucount=self.config["updates"], dcount=self.config["deletes"], icount=self.config["inserts"])
+                    dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(len(self.dfa.columns)) + "_r" + str(rc)
+                    # save modified self.dfa
+                    self.where_to_save(self.dfa,dfb_name)
                     dt_changes[dfa_name] = [self.config["exp_id"], dfa_name, rc, dfb_name, changes]
-                    self.where_to_save(dfa,dfb,dfa_name, dfb_name)
 
         elif self.config["columnsIsAbsolute"] == "False":
             logging.debug("ColumnsIsAbsolute is False. The number of the total generating automatically from columns_min_count to columns_max_count."
@@ -67,42 +67,65 @@ class CDCGenerator:
 
             for rc in self.rows_count:
                 for cc in self.columns_count:
-                    self.df_schema = self.get_df_schema(is_absolute=self.config["columnsIsAbsolute"],
-                                                        icount=self.config["columns_int"],
-                                                        fcount=self.config["columns_float"],
-                                                        scount=self.config["columns_string"],
+                    self.df_schema = self.get_df_schema(is_absolute=self.config["columnsIsAbsolute"], icount=self.config["columns_int"], fcount=self.config["columns_float"], scount=self.config["columns_string"],
                                                         total=cc)
-                    dfa = self.get_df(rows_count=rc)
-                    dfb,changes = self.make_rows_changes(dfa, ucount=self.config["updates"], dcount=self.config["deletes"], icount=self.config["inserts"])
+                    self.dfa = self.get_df(rows_count=rc)
                     dfa_name = "a" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
-                    dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
-                    dt_changes[dfa_name] = [self.config["exp_id"], dfa_name, rc, dfb_name, changes]
-                    self.where_to_save(dfa, dfb, dfa_name, dfb_name)
+                    self.where_to_save(self.dfa, dfa_name)
 
+                    changes = self.make_rows_changes(self.dfa, ucount=self.config["updates"], dcount=self.config["deletes"], icount=self.config["inserts"])
+                    dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
+                    self.where_to_save(self.dfa, dfb_name)
+                    dt_changes[dfa_name] = [self.config["exp_id"], dfa_name, rc, dfb_name, changes]
         if self.config["save_tb_name"] == "True":
             self.tb_name_update(dt_changes)
         logging.info(str(datetime.fromtimestamp(time.time())-datetime.fromtimestamp(self.start)) + " Generating is finished")
 
     def exp_delete(self):
         query = ""
-        for rc in self.rows_count:
-            for cc in self.columns_count:
-                dfa_name = "a" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
-                dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
+
+        if self.config["columnsIsAbsolute"] == "True":
+            for rc in self.rows_count:
+                self.df_schema = self.get_df_schema(is_absolute=self.config["columnsIsAbsolute"], icount=self.config["columns_int"], fcount=self.config["columns_float"], scount=self.config["columns_string"])
+                self.dfa = self.get_df(rows_count=1)
+                dfa_name = "a" + str(self.config["exp_id"]) + "_c" + str(len(self.dfa.columns)) + "_r" + str(rc)
+                dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(len(self.dfa.columns)) + "_r" + str(rc)
+
                 if query == "":
                     query += dfa_name
                     query += "," + dfb_name
                 else:
                     query += "," + dfa_name
                     query += "," + dfb_name
-        if (query != "") | (query == "*"):
-            query = "DROP TABLE " + query + ";"
-        connection_string = self.config["db_cs"]
-        engine = create_engine(connection_string)
-        with engine.connect() as con:
-            statement = text(query)
-            con.execute(statement)
-        self.tb_name_update(op="delete")
+            if (query != "") | (query == "*"):
+                query = "DROP TABLE " + query + ";"
+            connection_string = self.config["db_cs"]
+            engine = create_engine(connection_string)
+            with engine.connect() as con:
+                statement = text(query)
+                con.execute(statement)
+            self.tb_name_update(op="delete")
+
+        elif self.config["columnsIsAbsolute"] == "False":
+            for rc in self.rows_count:
+                for cc in self.columns_count:
+                    dfa_name = "a" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
+                    dfb_name = "b" + str(self.config["exp_id"]) + "_c" + str(cc) + "_r" + str(rc)
+
+                    if query == "":
+                        query += dfa_name
+                        query += "," + dfb_name
+                    else:
+                        query += "," + dfa_name
+                        query += "," + dfb_name
+            if (query != "") | (query == "*"):
+                query = "DROP TABLE " + query + ";"
+            connection_string = self.config["db_cs"]
+            engine = create_engine(connection_string)
+            with engine.connect() as con:
+                statement = text(query)
+                con.execute(statement)
+            self.tb_name_update(op="delete")
 
     def get_df_schema(self, is_absolute=True, icount=1, fcount=0, scount=0, total=0) -> dict:
         """ isAbsolute - icount,fcount,scount contain absolute numbers or percents from total
@@ -156,7 +179,7 @@ class CDCGenerator:
             dcount - the number of rows to update
             icount - the number of rows to update
         """
-        dataframe = dataframe.copy()
+        #dataframe = dataframe.copy()
         len_df = len(dataframe)
         clms = list(dataframe.columns)
 
@@ -181,21 +204,24 @@ class CDCGenerator:
         first_index = int(dataframe.tail(1).index.item())+1
         for i in range(first_index, first_index + icount):
             rnd_val = self.get_df(rows_count=1).iloc[0]  # get new random element with 1 element
-            dataframe[i] = rnd_val
+            #dataframe[i] = rnd_val
+            dataframe = dataframe.append(rnd_val,ignore_index=True)
             changes.append({"op": "i", "id": int(i), "v": json.loads(rnd_val.to_json())})
-
+        if dcount> len(dataframe):
+            logging.info(" dcount must more than len(dataframe)")
+            raise  ValueError
         # make deletes
-        delete_indexes = list(np.random.randint(0, len_df, size=dcount))
+        delete_indexes = list(np.random.randint(0, len(dataframe), size=dcount))
         dataframe.drop(delete_indexes, inplace=True)
         for i in delete_indexes:
             changes.append({"op": "d","id": int(i)})
             # нужно ли сохранять что было удалено?
         changes = json.dumps(changes)
-        return (dataframe, changes)
+        return  changes
 
     def tb_name_update(self,dt_changes=None,op="append"):
         if op=="append" and dt_changes is not None:
-            clms=["experiment_id","tb_source","elements","tb_target","changes"]
+            clms=["experiment_id", "tb_source", "elements", "tb_target", "changes"]
             df_tb = pd.DataFrame.from_dict(dt_changes,orient="index",columns=clms)
             connection_string = self.config["db_cs"]
             conn = create_engine(connection_string)
@@ -208,17 +234,15 @@ class CDCGenerator:
                 statement = text(query)
                 con.execute(statement)
 
-    def where_to_save(self,dfa,dfb,dfa_name,dfb_name):
+    def where_to_save(self,dataframe,df_name):
         if self.config["where_to_save"] == "db":
             temp_time = time.time()
-            self.save_to_db(dfa, dfa_name)
-            self.save_to_db(dfb, dfb_name)
-            logging.info(time.strftime("%H:%M:%S", time.gmtime(time.time()-temp_time)) + " takes to save tables "+dfa_name+", "+dfb_name +" to the db")
+            self.save_to_db(dataframe, df_name)
+            logging.info(time.strftime("%H:%M:%S", time.gmtime(time.time()-temp_time)) + " takes to save table "+df_name+" to the db")
         elif self.config["where_to_save"] == "excel":
             temp_time = time.time()
-            self.save_to_excel(dfa,str(self.start)+ ".xlsx",dfa_name)
-            self.save_to_excel(dfb,str(self.start)+ ".xlsx",dfb_name)
-            logging.info(time.strftime("%H:%M:%S", time.gmtime(time.time()-temp_time)) + " takes to save tables "+dfa_name+", "+dfb_name +" to the excel file")
+            self.save_to_excel(dataframe,str(self.start)+ ".xlsx",df_name)
+            logging.info(time.strftime("%H:%M:%S", time.gmtime(time.time()-temp_time)) + " takes to save table "+df_name+" to the excel file")
 
     def save_to_db(self, dataframe: pd.DataFrame, tb_name):
         try:
@@ -245,6 +269,6 @@ class CDCGenerator:
             print(e)
 
 if __name__ == '__main__':
-    gen = CDCGenerator('CDCGenerator_config1.json')
+    gen = CDCGenerator('CDCGenerator_config.json')
     gen.exp_create()
     #gen.exp_delete()
