@@ -37,8 +37,8 @@ class Benchmark:
         spec.loader.exec_module(module)
         testing_class = getattr(module, SDS_param['class'])
 
-        self.source_struct = testing_class(hash=SDS_param['hash'])
-        self.destination_struct = testing_class(hash=SDS_param['hash'])
+        self.source_struct = testing_class(hsh=SDS_param['hash'])
+        self.destination_struct = testing_class(hsh=SDS_param['hash'])
 
         self.name = SDS_param["class"] + "_" + SDS_param["hash"] + "_" + self.table_source['name'] + "_" + \
                     self.table_destination['name']
