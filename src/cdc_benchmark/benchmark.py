@@ -90,7 +90,7 @@ class Benchmark:
         return result_time_min
 
     @staticmethod
-    def build_struct(db: DBConnector, table: dict, struct: Any) -> tuple[int, str]:
+    def build_struct(db, table, struct):
         data = db.getTableData(table_name=table['name'], pk=table['PK'])
         start_perf = time.monotonic_ns()
         struct.add_iter(data['keys'], data['values'])
