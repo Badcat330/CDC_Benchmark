@@ -96,7 +96,8 @@ class Benchmark:
         data = db.getTableData(table_name=table['name'], pk=table['PK'])
         print('Start building')
         start_perf = time.monotonic_ns()
-        struct.add_iter(data['keys'], data['values'])
+        for i in data:
+            struct.add_iter(i['keys'], i['values'])
         end_perf = time.monotonic_ns()
         struct_size = Benchmark.deep_getsizeof(struct)
         result_time_min = Benchmark.ns_min(end_perf - start_perf)
