@@ -91,7 +91,9 @@ class Benchmark:
 
     @staticmethod
     def build_struct(db: DBConnector, table: dict, struct: Any) -> tuple[int, str]:
+        print(f'Start getting data from table {table["name"]}')
         data = db.getTableData(table_name=table['name'], pk=table['PK'])
+        print('Start building')
         start_perf = time.monotonic_ns()
         struct.add_iter(data['keys'], data['values'])
         end_perf = time.monotonic_ns()
@@ -104,12 +106,12 @@ class Benchmark:
         result = {}
         efficiency = {}
         start_perf = time.monotonic_ns()
-        print("Start building source struct!")
+        print("Start test building source struct!")
         efficiency['source size'], efficiency['source build time'] = self.build_struct(
             self.sourceDB,
             self.table_source,
             self.source_struct)
-        print("Start building destination struct!")
+        print("Start test building destination struct!")
         efficiency['destination size'], efficiency['destination build time'] = self.build_struct(
             self.destinationDB,
             self.table_destination,

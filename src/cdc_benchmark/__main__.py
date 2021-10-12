@@ -52,6 +52,9 @@ def open_config(name):
 
 
 def give_config(name, path):
+    if not os.path.isdir('temporary'):
+        os.mkdir('temporary')
+
     with open(path, "r", encoding="utf-8") as fh:
         config_row = json.loads(fh.read())
         config = config_row
