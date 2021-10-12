@@ -1,6 +1,7 @@
 from typing import Any, NoReturn
 from cdc_benchmark.data_base_connector import DBConnector
 from collections.abc import Mapping, Iterable
+from typing import Tuple
 from datetime import datetime
 from sys import getsizeof, executable
 from subprocess import check_call
@@ -90,7 +91,7 @@ class Benchmark:
         return result_time_min
 
     @staticmethod
-    def build_struct(db: DBConnector, table: dict, struct: Any) -> tuple[int, str]:
+    def build_struct(db: DBConnector, table: dict, struct: Any) -> Tuple[int, str]:
         print(f'Start getting data from table {table["name"]}')
         data = db.getTableData(table_name=table['name'], pk=table['PK'])
         print('Start building')
