@@ -94,9 +94,11 @@ class Benchmark:
     def build_struct(db: DBConnector, table: dict, struct: Any) -> Tuple[int, str]:
         print(f'Start getting data from table {table["name"]}')
         data = db.getTableData(table_name=table['name'], pk=table['PK'])
-        print('Start building')
         start_perf = time.monotonic_ns()
+        count = 0
         for i in data:
+            count += len(i['keys'])
+            print(f"Get {count} rows! Start adding to struct!")
             struct.add_iter(i['keys'], i['values'])
         end_perf = time.monotonic_ns()
         struct_size = Benchmark.deep_getsizeof(struct)
