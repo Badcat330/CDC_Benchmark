@@ -1,6 +1,7 @@
 from cdc_benchmark.benchmark import Benchmark
 from jschon import JSON, JSONSchema, create_catalog
 from cdc_benchmark.benchmark_exceptions import NoConfigFoundException, InvalidConfigException
+from cdc_benchmark.generator import CDCGenerator
 import argparse
 import json
 import os
@@ -11,10 +12,10 @@ def validate_test_config() -> dict:
     create_catalog('2020-12', default=True)
 
     with open("src/cdc_benchmark/data/DBMS_schema.json", "r", encoding="utf-8") as fh:
-        DBMS_schema = JSONSchema(json.loads(fh.read()))
+        JSONSchema(json.loads(fh.read()))
 
-    with open("src/cdc_benchmark/data/table_achema.json", "r", encoding="utf-8") as fh:
-        table_schema = JSONSchema(json.loads(fh.read()))
+    with open("src/cdc_benchmark/data/table_schema.json", "r", encoding="utf-8") as fh:
+        JSONSchema(json.loads(fh.read()))
 
     with open("src/cdc_benchmark/data/config_schema.json", "r", encoding="utf-8") as fh:
         config_schema_row = json.loads(fh.read())
@@ -35,6 +36,10 @@ def validate_test_config() -> dict:
         return config_row
     else:
         raise InvalidConfigException()
+
+
+def validate_generator_config():
+    pass
 
 
 def open_config(name):
@@ -71,6 +76,10 @@ def main():
                         help="Flag for editing config.")
     parser.add_argument("--params", '-p', nargs=1, required=False, help="Give Path for existing config.")
     parser.add_argument("--file", '-f', nargs=1, required=False, help="Give Path for saving output to file.")
+    parser.add_argument("--delete", '-d', action='store_const', const=True, required=False,
+                        help="Flag for deleting experiment.")
+    parser.add_argument("--change", '-c', nargs=4, required=False, help="Make changes in table.")
+
     args = parser.parse_args()
 
     if args.params:
@@ -93,4 +102,13 @@ def main():
         else:
             print(json.dumps(result, indent=4))
     elif args.workflow_type[0] == 'generator':
-        print('generator')
+        gen = CDCGenerator()
+        if args.delete:
+            gen.exp_delete()
+        elif args.change:
+            gen.make_rows_changes(atable=args.change[0],
+                                  ucount=args.change[1],
+                                  icount=args.change[2],
+                                  dcount=args.change[3])
+        else:
+            gen.exp_create()
