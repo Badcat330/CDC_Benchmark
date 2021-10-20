@@ -107,8 +107,8 @@ def main():
             gen.exp_delete()
         elif args.change:
             gen.make_rows_changes(atable=args.change[0],
-                                  ucount=args.change[1],
-                                  icount=args.change[2],
-                                  dcount=args.change[3])
+                                  ucount=int(args.change[1]),
+                                  icount=int(args.change[2]),
+                                  dcount=int(args.change[3]))
         else:
             gen.exp_create()
