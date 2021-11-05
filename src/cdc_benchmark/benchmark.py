@@ -9,6 +9,7 @@ import importlib
 import time
 
 
+
 class Benchmark:
     def __init__(self, config: dict) -> NoReturn:
         self.table_source = config['table_source']
@@ -141,8 +142,67 @@ class Benchmark:
             result['compare_answer'] = answer
 
         if self.changeset_param['content']['changetable']:
-            result['change table'] = change_table
+            if self.changeset_param['changetable_type'] == 'JSON':
+                clean_changetable = []
+                column_names = list(map(lambda x: x.strip(), self.sourceDB.last_columns_names.split(',')))
+                for item in change_table:
+                    if item['op'] in ['i', 'd']:
+                        clean_changetable += [{'op': f"{item['op']}",
+                                              'id': f"{item['id']}"}]
+                    else:
+                        columns = []
+                        values = []
+                        for index in range(len(item['v'])):
+                            if item['v'][index] != item['old v'][index]:
+                                columns += [column_names[index]]
+                                values += [item['v'][index]]
 
+                        clean_changetable += [{'op': item['op'],
+                                              'id': item['id'],
+                                              'v': values,
+                                              'colid': columns}]
+                result['change table'] = clean_changetable
+            elif self.changeset_param['changetable_type'] == 'SQL':
+                # TODO: Add SQL
+                pass
+
+        if self.changeset_param['content']['comparingtable']:
+            if self.changeset_param['comparingtable_type'] == 'JSON':
+                result['comparing table'] = change_table
+            elif self.changeset_param['comparingtable_type'] == 'html':
+                html = '<table border="1"> <thead> <tr> <th>op</th> <th>id</th>'
+                column_names = list(map(lambda x: x.strip(), self.sourceDB.last_columns_names.split(',')))
+                for name in column_names:
+                    html += f' <th>{name}</th>'
+
+                html += ' </tr> </thead> <tbody>'
+
+                for item in change_table:
+                    if item['op'] in ['i', 'd']:
+                        html += ' <tr>'
+                        html += f' <td>{item["op"]}</td> <td>{item["id"]}</td>'
+                        for value in item['v']:
+                            html += f' <td>{value}</td>'
+                        html += ' </tr>'
+                    else:
+                        html += ' <tr>'
+                        html += f' <td rowspan="2">{item["op"]}</td> <td rowspan="2">{item["id"]}</td>'
+                        for old_value, value in zip(item['old v'], item['v']):
+                            if old_value == value:
+                                html += f' <td>{old_value}</td>'
+                            else:
+                                html += f' <td> <strong>{old_value}</strong> </td>'
+                        html += ' </tr>'
+                        html += ' <tr>'
+                        for old_value, value in zip(item['old v'], item['v']):
+                            if old_value == value:
+                                html += f' <td>{value}</td>'
+                            else:
+                                html += f' <td> <strong>{value}</strong> </td>'
+                        html += ' </tr>'
+                html += ' </tbody>'
+                html += ' </table>'
+                result['comparing table'] = html
         if self.changeset_param['content']['efficiency']:
             result['efficiency'] = efficiency
 

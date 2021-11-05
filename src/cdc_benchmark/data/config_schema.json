@@ -1,256 +1,289 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://example.com/config_schema.json",
-    "type": "object",
-    "title": "CDC Benchmark config schema",
-    "description": "The config file schema for CDC Benchamrk tool.",
-    "default": {},
-    "examples": [
-        {
-            "benchDB": {
-                "DBMS": "",
-                "db": "",
-                "ip": "",
-                "user": "",
-                "password": "",
-                "port": 3306
-            },
-            "destination": {
-                "DBMS": "",
-                "db": "",
-                "ip": "",
-                "user": "",
-                "password": "",
-                "port": 3306
-            },
-            "source": {
-                "DBMS": "",
-                "db": "",
-                "ip": "",
-                "user": "",
-                "password": "",
-                "port": 3306
-            },
-            "table_source": {
-                "name": "",
-                "PK": ""
-            },
-            "table_destination": {
-                "name": "",
-                "PK": ""
-            },
-            "SDS_param": {
-                "path": "",
-                "module": "",
-                "class": "",
-                "hash": "",
-                "requirements": []
-            },
-            "Changeset_param": {
-                "content": {
-                    "answer": true,
-                    "changetable": false,
-                    "efficiency": false
-                },
-                "changetable_type": ""
-            }
-        }
-    ],
-    "required": [
-        "benchDB",
-        "destination",
-        "source",
-        "table_source",
-        "table_destination",
-        "SDS_param",
-        "Changeset_param"
-    ],
-    "properties": {
-        "benchDB": {
-            "description": "DBMC connection properties for DB with benchmark results.",
-            "$ref": "http://example.com/DBMS.schema.json"
-        },
-        "destination": {
-            "description": "DBMC connection properties for DB with destination tables.",
-            "$ref": "http://example.com/DBMS.schema.json"
-        },
-        "source": {
-            "description": "DBMC connection properties for DB with source table.",
-            "$ref": "http://example.com/DBMS.schema.json"
-        },
-        "table_source": {
-            "description": "DB source table information.",
-            "$ref": "http://example.com/table.schema.json"
-        },
-        "table_destination": {
-            "description": "DB destination information.",
-            "$ref": "http://example.com/table.schema.json"
-        },
-        "SDS_param": {
-            "$id": "/properties/SDS_param",
-            "type": "object",
-            "title": "The SDS_param schema",
-            "description": "Information about testing struct.",
-            "default": {},
-            "examples": [
-                {
-                    "path": "../../merkle_tree.py",
-                    "module": "merkle_tree",
-                    "class": "MerkleTree",
-                    "hash": "TigerHash",
-                    "requirements": ["blake3", "tigerhash"]
-                }
-            ],
-            "required": [
-                "path",
-                "module",
-                "class",
-                "hash",
-                "requirements"
-            ],
-            "properties": {
-                "path": {
-                    "$id": "/properties/SDS_param/properties/path",
-                    "type": "string",
-                    "title": "The path string",
-                    "description": "Path to *.py file with structure for testing.",
-                    "default": "",
-                    "examples": [
-                        "../../merkle_tree.py"
-                    ]
-                },
-                "module": {
-                    "$id": "/properties/SDS_param/properties/module",
-                    "type": "string",
-                    "title": "The module name",
-                    "description": "Name of module with structure class for testing.",
-                    "default": "",
-                    "examples": [
-                        "merkle_tree"
-                    ]
-                },
-                "class": {
-                    "$id": "/properties/SDS_param/properties/class",
-                    "type": "string",
-                    "title": "The class name",
-                    "description": "Name of data structure for testing.",
-                    "default": "",
-                    "examples": [
-                        "MerkleTree"
-                    ]
-                },
-                "hash": {
-                    "$id": "/properties/SDS_param/properties/hash",
-                    "type": "string",
-                    "title": "The hash schema",
-                    "description": "Type of hash for data structure.",
-                    "default": "",
-                    "examples": [
-                        "TigerHash"
-                    ]
-                },
-                "requirements": {
-                    "$id": "/properties/SDS_param/properties/requirements",
-                    "type": "array",
-                    "title": "The requirements array",
-                    "description": "Requirements for data structure.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "default": "",
-                    "examples": [
-                        ["blake3", "tigerhash"]
-                    ]
-                }
-            },
-            "additionalProperties": true
-        },
-        "Changeset_param": {
-            "$id": "/properties/Changeset_param",
-            "type": "object",
-            "title": "The Changeset_param schema",
-            "description": "Parametrs of changset output.",
-            "default": {},
-            "examples": [
-                {
-                    "content": {
-                        "answer": true,
-                        "changetable": false,
-                        "efficiency": false
-                    },
-                    "changetable_type": "rows"
-                }
-            ],
-            "required": [
-                "content",
-                "changetable_type"
-            ],
-            "properties": {
-                "content": {
-                    "$id": "/properties/Changeset_param/properties/content",
-                    "type": "object",
-                    "title": "The content schema",
-                    "description": "Content of output, which will be provide.",
-                    "default": {},
-                    "examples": [
-                        {
-                            "answer": true,
-                            "changetable": false,
-                            "efficiency": false
-                        }
-                    ],
-                    "required": [
-                        "answer",
-                        "changetable",
-                        "efficiency"
-                    ],
-                    "properties": {
-                        "answer": {
-                            "$id": "/properties/Changeset_param/properties/content/properties/answer",
-                            "type": "boolean",
-                            "title": "The answer schema",
-                            "description": "If consistent or inconsistent value required.",
-                            "default": true,
-                            "examples": [
-                                true
-                            ]
-                        },
-                        "changetable": {
-                            "$id": "/properties/Changeset_param/properties/content/properties/changetable",
-                            "type": "boolean",
-                            "title": "The changetable schema",
-                            "description": "If changetable required.",
-                            "default": false,
-                            "examples": [
-                                false
-                            ]
-                        },
-                        "efficiency": {
-                            "$id": "/properties/Changeset_param/properties/content/properties/efficiency",
-                            "type": "boolean",
-                            "title": "The efficiency schema",
-                            "description": "If efficiency data required.",
-                            "default": false,
-                            "examples": [
-                                false
-                            ]
-                        }
-                    },
-                    "additionalProperties": true
-                },
-                "changetable_type": {
-                    "$id": "/properties/Changeset_param/properties/changetable_type",
-                    "type": "string",
-                    "title": "The changetable_type schema",
-                    "description": "Type of changetable, which will be returned if content.changetable is true.",
-                    "default": "",
-                    "examples": [
-                        "rows"
-                    ]
-                }
-            },
-            "additionalProperties": true
-        }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://example.com/config_schema.json",
+  "type": "object",
+  "title": "CDC Benchmark config schema",
+  "description": "The config file schema for CDC Benchamrk tool.",
+  "default": {},
+  "examples": [
+    {
+      "benchDB": {
+        "DBMS": "",
+        "db": "",
+        "ip": "",
+        "user": "",
+        "password": "",
+        "port": 3306
+      },
+      "destination": {
+        "DBMS": "",
+        "db": "",
+        "ip": "",
+        "user": "",
+        "password": "",
+        "port": 3306
+      },
+      "source": {
+        "DBMS": "",
+        "db": "",
+        "ip": "",
+        "user": "",
+        "password": "",
+        "port": 3306
+      },
+      "table_source": {
+        "name": "",
+        "PK": ""
+      },
+      "table_destination": {
+        "name": "",
+        "PK": ""
+      },
+      "SDS_param": {
+        "path": "",
+        "module": "",
+        "class": "",
+        "hash": "",
+        "requirements": []
+      },
+      "Changeset_param": {
+        "content": {
+            "answer": true,
+            "changetable": false,
+            "comparingtable": false,
+            "efficiency": false
+          },
+        "changetable_type": "JSON",
+        "comparingtable_type": "JSON"
+      }
+    }
+  ],
+  "required": [
+    "benchDB",
+    "destination",
+    "source",
+    "table_source",
+    "table_destination",
+    "SDS_param",
+    "Changeset_param"
+  ],
+  "properties": {
+    "benchDB": {
+      "description": "DBMC connection properties for DB with benchmark results.",
+      "$ref": "http://example.com/DBMS.schema.json"
     },
-    "additionalProperties": true
+    "destination": {
+      "description": "DBMC connection properties for DB with destination tables.",
+      "$ref": "http://example.com/DBMS.schema.json"
+    },
+    "source": {
+      "description": "DBMC connection properties for DB with source table.",
+      "$ref": "http://example.com/DBMS.schema.json"
+    },
+    "table_source": {
+      "description": "DB source table information.",
+      "$ref": "http://example.com/table.schema.json"
+    },
+    "table_destination": {
+      "description": "DB destination information.",
+      "$ref": "http://example.com/table.schema.json"
+    },
+    "SDS_param": {
+      "$id": "/properties/SDS_param",
+      "type": "object",
+      "title": "The SDS_param schema",
+      "description": "Information about testing struct.",
+      "default": {},
+      "examples": [
+        {
+          "path": "../../merkle_tree.py",
+          "module": "merkle_tree",
+          "class": "MerkleTree",
+          "hash": "TigerHash",
+          "requirements": [
+            "blake3",
+            "tigerhash"
+          ]
+        }
+      ],
+      "required": [
+        "path",
+        "module",
+        "class",
+        "hash",
+        "requirements"
+      ],
+      "properties": {
+        "path": {
+          "$id": "/properties/SDS_param/properties/path",
+          "type": "string",
+          "title": "The path string",
+          "description": "Path to *.py file with structure for testing.",
+          "default": "",
+          "examples": [
+            "../../merkle_tree.py"
+          ]
+        },
+        "module": {
+          "$id": "/properties/SDS_param/properties/module",
+          "type": "string",
+          "title": "The module name",
+          "description": "Name of module with structure class for testing.",
+          "default": "",
+          "examples": [
+            "merkle_tree"
+          ]
+        },
+        "class": {
+          "$id": "/properties/SDS_param/properties/class",
+          "type": "string",
+          "title": "The class name",
+          "description": "Name of data structure for testing.",
+          "default": "",
+          "examples": [
+            "MerkleTree"
+          ]
+        },
+        "hash": {
+          "$id": "/properties/SDS_param/properties/hash",
+          "type": "string",
+          "title": "The hash schema",
+          "description": "Type of hash for data structure.",
+          "default": "",
+          "examples": [
+            "TigerHash"
+          ]
+        },
+        "requirements": {
+          "$id": "/properties/SDS_param/properties/requirements",
+          "type": "array",
+          "title": "The requirements array",
+          "description": "Requirements for data structure.",
+          "items": {
+            "type": "string"
+          },
+          "default": "",
+          "examples": [
+            [
+              "blake3",
+              "tigerhash"
+            ]
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "Changeset_param": {
+      "$id": "/properties/Changeset_param",
+      "type": "object",
+      "title": "The Changeset_param schema",
+      "description": "Parametrs of changset output.",
+      "default": {},
+      "examples": [
+        {
+          "content": {
+            "answer": true,
+            "changetable": false,
+            "comparingtable": false,
+            "efficiency": false
+          },
+          "changetable_type": "JSON",
+          "comparingtable_type": "JSON"
+        }
+      ],
+      "required": [
+        "content",
+        "changetable_type",
+        "comparingtable_type"
+      ],
+      "properties": {
+        "content": {
+          "$id": "/properties/Changeset_param/properties/content",
+          "type": "object",
+          "title": "The content schema",
+          "description": "Content of output, which will be provide.",
+          "default": {},
+          "examples": [
+            {
+              "answer": true,
+              "changetable": false,
+              "comparingtable": false,
+              "efficiency": false
+            }
+          ],
+          "required": [
+            "answer",
+            "changetable",
+            "comparingtable",
+            "efficiency"
+          ],
+          "properties": {
+            "answer": {
+              "$id": "/properties/Changeset_param/properties/content/properties/answer",
+              "type": "boolean",
+              "title": "The answer schema",
+              "description": "If consistent or inconsistent value required.",
+              "default": true,
+              "examples": [
+                true
+              ]
+            },
+            "changetable": {
+              "$id": "/properties/Changeset_param/properties/content/properties/changetable",
+              "type": "boolean",
+              "title": "The changetable schema",
+              "description": "If changetable required.",
+              "default": false,
+              "examples": [
+                false
+              ]
+            },
+            "comparingtable": {
+              "$id": "/properties/Changeset_param/properties/content/properties/comparingtable",
+              "type": "boolean",
+              "title": "The comparingtable schema",
+              "description": "If comparingtable required.",
+              "default": false,
+              "examples": [
+                false
+              ]
+            },
+            "efficiency": {
+              "$id": "/properties/Changeset_param/properties/content/properties/efficiency",
+              "type": "boolean",
+              "title": "The efficiency schema",
+              "description": "If efficiency data required.",
+              "default": false,
+              "examples": [
+                false
+              ]
+            }
+          },
+          "additionalProperties": true
+        },
+        "changetable_type": {
+          "$id": "/properties/Changeset_param/properties/changetable_type",
+          "type": "string",
+          "title": "The changetable_type schema",
+          "description": "Type of changetable, which will be returned if content.changetable is true.",
+          "default": "",
+          "examples": [
+            "JSON"
+          ]
+        },
+        "comparingtable_type": {
+          "$id": "/properties/Changeset_param/properties/comparingtable_type",
+          "type": "string",
+          "title": "The comparingtable_type schema",
+          "description": "Type of comparingtable, which will be returned if content.comparingtable is true.",
+          "default": "",
+          "examples": [
+            "JSON"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
 }

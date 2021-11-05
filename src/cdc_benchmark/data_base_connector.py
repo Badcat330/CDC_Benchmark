@@ -11,6 +11,7 @@ class DBConnectorException(ValueError):
 
 class DBConnector:
     def __init__(self, config: dict) -> None:
+        self.last_columns_names = None
         if config['db'] == '':
             raise DBConnectorException
 
@@ -53,6 +54,7 @@ class DBConnector:
                         WHERE table_name   = '{table_name}'""")
         columns_names = ''.join(str(i[0]) + ', ' for i in cur_names.fetchall())
         clean_columns_names = columns_names.replace(f"{pk}, ", "").strip()[:-1]
+        self.last_columns_names = clean_columns_names
         cur_names.close()
 
         cur_columns = self.connector.cursor("columns_columns")
